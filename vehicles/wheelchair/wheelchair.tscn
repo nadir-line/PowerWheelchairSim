@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://cymqh3vwjwfxb" path="res://scripts/pid_calc.gd" id="3"]
 [ext_resource type="PackedScene" uid="uid://dra5rbwi638wh" path="res://uires/hud_basic/hud_basic.tscn" id="4"]
 [ext_resource type="Script" uid="uid://2htfpjqhnla4" path="res://uires/hud_basic/hud_basic.gd" id="5"]
+[ext_resource type="PackedScene" uid="uid://cjv2lfcskjch1" path="res://uires/systems_display/systems_display.tscn" id="6_uq36a"]
 
 [sub_resource type="BoxShape3D" id="2"]
 size = Vector3(0.414, 0.04, 0.5)
@@ -17,6 +18,18 @@ size = Vector3(0.333988, 0.04, 0.090221)
 
 [sub_resource type="BoxShape3D" id="1"]
 size = Vector3(0.413528, 0.536672, 0.0285416)
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_uq36a"]
+viewport_path = NodePath("SubViewport")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x5k6a"]
+resource_local_to_scene = true
+albedo_texture = SubResource("ViewportTexture_uq36a")
+
+[sub_resource type="QuadMesh" id="QuadMesh_cqpqj"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_x5k6a")
+size = Vector2(0.03, 0.02)
 
 [node name="Wheelchair" type="VehicleBody3D" unique_id=777510085]
 mass = 100.0
@@ -126,4 +139,60 @@ term_P = 1.0
 term_D = 0.05
 
 [node name="HUDBasic" parent="." unique_id=762112098 instance=ExtResource("4")]
+visible = false
 script = ExtResource("5")
+
+[node name="AttachPtArm" type="CSGBox3D" parent="." unique_id=1940582296]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.21192017, 0.20940821, -0.17022233)
+size = Vector3(0.01, 0.01, 0.05)
+
+[node name="PvArm" type="Node3D" parent="AttachPtArm" unique_id=812090482]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.01949574)
+
+[node name="MeshArm" type="CSGBox3D" parent="AttachPtArm/PvArm" unique_id=215993890]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.009, -0.02)
+size = Vector3(0.01, 0.01, 0.04)
+
+[node name="PvCon" type="Node3D" parent="AttachPtArm/PvArm" unique_id=1622668845]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.009, -0.035)
+
+[node name="MeshPv" type="CSGCylinder3D" parent="AttachPtArm/PvArm/PvCon" unique_id=36720682]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.008715153, 0)
+radius = 0.001
+height = 0.01
+
+[node name="Con" type="Node3D" parent="AttachPtArm/PvArm/PvCon" unique_id=970293017]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.015, 0)
+
+[node name="MeshConBase" type="CSGBox3D" parent="AttachPtArm/PvArm/PvCon/Con" unique_id=1077446520]
+size = Vector3(0.04, 0.005, 0.04)
+
+[node name="MeshConArch" type="CSGBox3D" parent="AttachPtArm/PvArm/PvCon/Con/MeshConBase" unique_id=1563933277]
+transform = Transform3D(1, 0, 0, 0, 0.8660254, -0.5, 0, 0.5, 0.8660254, 0, 0.009681016, -0.03597352)
+size = Vector3(0.04, 0.005, 0.04)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="AttachPtArm/PvArm/PvCon/Con/MeshConBase/MeshConArch" unique_id=973000796]
+transform = Transform3D(1, 0, 0, 0, -2.9802322e-08, 1, 0, -1, -2.9802322e-08, 0, 0.0025711427, -0.0040504634)
+mesh = SubResource("QuadMesh_cqpqj")
+
+[node name="Joystick" type="Node3D" parent="AttachPtArm/PvArm/PvCon/Con" unique_id=1795679568]
+
+[node name="Mesh" type="CSGCylinder3D" parent="AttachPtArm/PvArm/PvCon/Con/Joystick" unique_id=161884762]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.011980772, 0)
+radius = 0.004
+height = 0.02
+
+[node name="Camera3D" type="Camera3D" parent="AttachPtArm/PvArm/PvCon/Con" unique_id=406038945]
+transform = Transform3D(1, 0, 0, 0, 0.49999997, 0.86602545, 0, -0.86602545, 0.49999997, 0, 0.07011469, -0.006022125)
+current = true
+
+[node name="SubViewport" type="SubViewport" parent="." unique_id=2078826839]
+handle_input_locally = false
+canvas_item_default_texture_repeat = 1
+render_target_update_mode = 4
+
+[node name="SystemsDisplay" parent="SubViewport" unique_id=1097086768 instance=ExtResource("6_uq36a")]
+offset_left = -404.0
+offset_top = -84.0
+offset_right = -404.0
+offset_bottom = -84.0

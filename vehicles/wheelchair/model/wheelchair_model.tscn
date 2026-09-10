@@ -2,49 +2,4 @@
 
 [ext_resource type="PackedScene" uid="uid://7gjdytfs85j8" path="res://vehicles/wheelchair/model/wheelchair.glb" id="1"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ry5o6"]
-albedo_color = Color(0.06469653, 0.06469653, 0.06469653, 1)
-
 [node name="wheelchair" unique_id=211042744 instance=ExtResource("1")]
-
-[node name="AttachPt" type="CSGBox3D" parent="." index="5" unique_id=1516377605]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.21192017, 0.20940821, -0.17022233)
-size = Vector3(0.01, 0.01, 0.05)
-
-[node name="PvArm" type="Node3D" parent="AttachPt" index="0" unique_id=77557008]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.01949574)
-
-[node name="MeshArm" type="CSGBox3D" parent="AttachPt/PvArm" index="0" unique_id=520460133]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.009, -0.02)
-size = Vector3(0.01, 0.01, 0.04)
-
-[node name="PvCon" type="Node3D" parent="AttachPt/PvArm" index="1" unique_id=62904197]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.009, -0.035)
-
-[node name="MeshPv" type="CSGCylinder3D" parent="AttachPt/PvArm/PvCon" index="0" unique_id=2132794752]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.008715153, 0)
-radius = 0.001
-height = 0.01
-
-[node name="Con" type="Node3D" parent="AttachPt/PvArm/PvCon" index="1" unique_id=2017685882]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.015, 0)
-
-[node name="MeshConBase" type="CSGBox3D" parent="AttachPt/PvArm/PvCon/Con" index="0" unique_id=1017928002]
-size = Vector3(0.04, 0.005, 0.04)
-
-[node name="MeshConArch" type="CSGBox3D" parent="AttachPt/PvArm/PvCon/Con/MeshConBase" index="0" unique_id=1905762455]
-transform = Transform3D(1, 0, 0, 0, 0.8660254, -0.5, 0, 0.5, 0.8660254, 0, 0.009681016, -0.03597352)
-size = Vector3(0.04, 0.005, 0.04)
-
-[node name="MeshConBezel" type="CSGBox3D" parent="AttachPt/PvArm/PvCon/Con/MeshConBase/MeshConArch" index="0" unique_id=1117336582]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0021515875, -0.0040504513)
-operation = 2
-size = Vector3(0.03, 0.001, 0.025)
-material = SubResource("StandardMaterial3D_ry5o6")
-
-[node name="Joystick" type="Node3D" parent="AttachPt/PvArm/PvCon/Con" index="1" unique_id=1565947317]
-
-[node name="Mesh" type="CSGCylinder3D" parent="AttachPt/PvArm/PvCon/Con/Joystick" index="0" unique_id=1979248316]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.011980772, 0)
-radius = 0.004
-height = 0.02

@@ -146,8 +146,8 @@ func _process(delta):
 	$HUDBasic.current_speed = linear_velocity.length()
 	
 	# 3D model joystick
-	$Model/AttachPt/PvArm/PvCon/Con/Joystick.rotation.z = -0.2 * input_joystick.x
-	$Model/AttachPt/PvArm/PvCon/Con/Joystick.rotation.x = -0.2 * input_joystick.y
+	$AttachPtArm/PvArm/PvCon/Con/Joystick.rotation.z = -0.2 * input_joystick.x
+	$AttachPtArm/PvArm/PvCon/Con/Joystick.rotation.x = -0.2 * input_joystick.y
 	
 	if Input.is_action_just_pressed("vr_toggle"):
 		use_vr = not use_vr
