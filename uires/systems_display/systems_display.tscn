@@ -1,0 +1,63 @@
+[gd_scene format=3 uid="uid://cjv2lfcskjch1"]
+
+[ext_resource type="FontFile" uid="uid://6hy24fcmknn0" path="res://assets/fonts/B612Mono-Regular.ttf" id="1_p8pil"]
+
+[sub_resource type="Theme" id="Theme_s5ptr"]
+default_font = ExtResource("1_p8pil")
+default_font_size = 50
+
+[node name="SystemsDisplay" type="Control" unique_id=1097086768]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1320.0
+offset_bottom = -680.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_s5ptr")
+
+[node name="Grid" type="GridContainer" parent="." unique_id=1069907125]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+columns = 3
+
+[node name="LabelRange" type="Label" parent="Grid" unique_id=157141905]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "RANGE"
+horizontal_alignment = 1
+
+[node name="LabelBattery" type="Label" parent="Grid" unique_id=1559986478]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "BAT"
+horizontal_alignment = 1
+
+[node name="LabelSpeed" type="Label" parent="Grid" unique_id=969170679]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "SPEED"
+horizontal_alignment = 1
+
+[node name="Range" type="Label" parent="Grid" unique_id=1454868798]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "XX.X"
+horizontal_alignment = 1
+
+[node name="Bat" type="Label" parent="Grid" unique_id=1641791003]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "XXX"
+horizontal_alignment = 1
+
+[node name="Speed" type="Label" parent="Grid" unique_id=1121215690]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "X.X"
+horizontal_alignment = 1
