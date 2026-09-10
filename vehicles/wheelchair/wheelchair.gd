@@ -145,6 +145,10 @@ func _process(delta):
 	
 	$HUDBasic.current_speed = linear_velocity.length()
 	
+	# 3D model joystick
+	$Model/AttachPt/PvArm/PvCon/Con/Joystick.rotation.z = -0.2 * input_joystick.x
+	$Model/AttachPt/PvArm/PvCon/Con/Joystick.rotation.x = -0.2 * input_joystick.y
+	
 	if Input.is_action_just_pressed("vr_toggle"):
 		use_vr = not use_vr
 		if use_vr:
@@ -164,7 +168,7 @@ func get_input(delta):
 	
 	# Camera
 	$CameraFPV.rotation.x = \
-		lerp($CameraFPV.rotation.x, Input.get_axis("cam_down", "cam_up"), 0.1)
+		lerp($CameraFPV.rotation.x, Input.get_axis("cam_down", "cam_up") - 0.15, 0.1)
 	$CameraFPV.rotation.y = \
 		lerp($CameraFPV.rotation.y, Input.get_axis("cam_left", "cam_right") * -3, 0.1)
 	$CameraFPV.position.x = \
