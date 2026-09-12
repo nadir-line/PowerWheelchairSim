@@ -185,13 +185,15 @@ func get_input(delta):
 	else:
 		# Fwd/aft
 		if $CameraFPV.rotation_degrees.x > 30:
-			$CameraFPV.position.z = ($CameraFPV.rotation_degrees.x - 30) / 500
+			$CameraFPV.position.z = ($CameraFPV.rotation_degrees.x - 30) / 200
 		elif $CameraFPV.rotation_degrees.x < -15:
-			$CameraFPV.position.z = ($CameraFPV.rotation_degrees.x + 15) / 500
+			$CameraFPV.position.z = ($CameraFPV.rotation_degrees.x + 15) / 200
+			$CameraFPV.position.y = 0.5 + ($CameraFPV.rotation_degrees.x + 15) / 300
 		else:
 			$CameraFPV.position.z = 0
+			$CameraFPV.position.y = 0.5
 		
-		$CameraFPV.position.x = -$CameraFPV.rotation_degrees.y / 500
+		$CameraFPV.position.x = -$CameraFPV.rotation_degrees.y / 300
 	
 	if Input.is_action_just_pressed("restart"):
 		get_tree().reload_current_scene()

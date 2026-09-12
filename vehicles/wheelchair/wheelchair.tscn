@@ -113,6 +113,7 @@ damping_relaxation = 1.0
 [node name="CameraFPV" type="Camera3D" parent="." unique_id=1579123492]
 transform = Transform3D(1, 0, 0, 0, 0.906308, 0.422618, 0, -0.422618, 0.906308, 0, 0.5, 0)
 keep_aspect = 0
+current = true
 fov = 120.0
 far = 10000.0
 
@@ -171,7 +172,7 @@ size = Vector3(0.04, 0.005, 0.04)
 transform = Transform3D(1, 0, 0, 0, 0.8660254, -0.5, 0, 0.5, 0.8660254, 0, 0.009681016, -0.03597352)
 size = Vector3(0.04, 0.005, 0.04)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="AttachPtArm/PvArm/PvCon/Con/MeshConBase/MeshConArch" unique_id=973000796]
+[node name="Screen" type="MeshInstance3D" parent="AttachPtArm/PvArm/PvCon/Con/MeshConBase/MeshConArch" unique_id=973000796]
 transform = Transform3D(1, 0, 0, 0, -2.9802322e-08, 1, 0, -1, -2.9802322e-08, 0, 0.0025711427, -0.0040504634)
 mesh = SubResource("QuadMesh_cqpqj")
 
@@ -182,17 +183,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.011980772, 0)
 radius = 0.004
 height = 0.02
 
-[node name="Camera3D" type="Camera3D" parent="AttachPtArm/PvArm/PvCon/Con" unique_id=406038945]
-transform = Transform3D(1, 0, 0, 0, 0.49999997, 0.86602545, 0, -0.86602545, 0.49999997, 0, 0.07011469, -0.006022125)
-current = true
-
 [node name="SubViewport" type="SubViewport" parent="." unique_id=2078826839]
 handle_input_locally = false
 canvas_item_default_texture_repeat = 1
-render_target_update_mode = 4
 
 [node name="SystemsDisplay" parent="SubViewport" unique_id=1097086768 instance=ExtResource("6_uq36a")]
-offset_left = -404.0
-offset_top = -84.0
-offset_right = -404.0
-offset_bottom = -84.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_right = 0.0
+offset_bottom = 0.0
