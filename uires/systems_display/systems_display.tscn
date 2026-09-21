@@ -5,7 +5,7 @@
 
 [sub_resource type="Theme" id="Theme_s5ptr"]
 default_font = ExtResource("1_p8pil")
-default_font_size = 80
+default_font_size = 100
 
 [node name="SystemsDisplay" type="Control" unique_id=1097086768]
 layout_mode = 3
