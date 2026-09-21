@@ -31,6 +31,9 @@ resource_local_to_scene = true
 material = SubResource("StandardMaterial3D_x5k6a")
 size = Vector2(0.03, 0.02)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uq36a"]
+albedo_color = Color(0.52, 0.52, 0.52, 1)
+
 [node name="Wheelchair" type="VehicleBody3D" unique_id=777510085]
 mass = 100.0
 center_of_mass_mode = 1
@@ -182,6 +185,7 @@ mesh = SubResource("QuadMesh_cqpqj")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.011980772, 0)
 radius = 0.004
 height = 0.02
+material = SubResource("StandardMaterial3D_uq36a")
 
 [node name="SubViewport" type="SubViewport" parent="." unique_id=2078826839]
 handle_input_locally = false
@@ -193,5 +197,3 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_right = 0.0
-offset_bottom = 0.0
