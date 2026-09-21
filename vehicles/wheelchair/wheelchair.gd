@@ -40,14 +40,14 @@ var vr_instance = VR_SCENE.instantiate()
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-#	DebugOverlay.stats.add_property(self, "input_joystick", "round")
-#	DebugOverlay.stats.add_property(self, "angular_velocity", "round")
-#	DebugOverlay.stats.add_property(self, "steering_angle_target", "round")
-#	DebugOverlay.stats.add_property(self, "steering", "round")
-#	DebugOverlay.stats.add_property(self, "wheel_velocity_ratio", "")
-#	DebugOverlay.stats.add_property(self, "turn_radius", "")
+	#DebugOverlay.stats.add_property(self, "input_joystick", "round")
+	#DebugOverlay.stats.add_property(self, "angular_velocity", "round")
+	#DebugOverlay.stats.add_property(self, "steering_angle_target", "round")
+	#DebugOverlay.stats.add_property(self, "steering", "round")
+	#DebugOverlay.stats.add_property(self, "wheel_velocity_ratio", "")
+	#DebugOverlay.stats.add_property(self, "turn_radius", "")
 	#DebugOverlay.stats.add_property(self, "linear_velocity_local", "round")
-	DebugOverlay.stats.add_property(self, "batt_lvl", "")
+	#DebugOverlay.stats.add_property(self, "batt_lvl", "")
 	pass # Replace with function body.
 
 func interpolate_linear(value_current, value_target, rate, delta_time):
