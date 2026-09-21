@@ -8,24 +8,24 @@ extends VehicleBody3D
 @export var WHEELBASE_WIDTH: float = 1
 @export var WHEEL_RADIUS_REAR: float = 1
 
-var input_joystick : Vector2 = Vector2.ZERO
+var input_joystick: Vector2 = Vector2.ZERO
 
-var linear_velocity_local : Vector3 = Vector3.ZERO
-var angular_velocity_local : Vector3 = Vector3.ZERO
+var linear_velocity_local: Vector3 = Vector3.ZERO
+var angular_velocity_local: Vector3 = Vector3.ZERO
 
-var steering_angle_target_l : float = 0.00
-var steering_angle_target_r : float = 0.00
+var steering_angle_target_l: float = 0
+var steering_angle_target_r: float = 0
 
-var steering_lerp_factor : float = 0.2
+var steering_lerp_factor: float = 0.2
 
-var wheel_speed_rear_left = 0.00
-var wheel_speed_rear_right = 0.00
+var wheel_speed_rear_left: float = 0
+var wheel_speed_rear_right: float = 0
 
-var turn_radius: float = 0.00
-var wheel_velocity_ratio: float = 0.00
+var turn_radius: float = 0
+var wheel_velocity_ratio: float = 0
 
-var wheel_speed_rear_left_tgt: float = 0.00
-var wheel_speed_rear_right_tgt: float = 0.00
+var wheel_speed_rear_left_tgt: float = 0
+var wheel_speed_rear_right_tgt: float = 0
 
 @export_range(0.1, 2, 0.1) var speed_limit: float = 1.5
 
