@@ -185,6 +185,7 @@ mesh = SubResource("QuadMesh_cqpqj")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.011980772, 0)
 radius = 0.004
 height = 0.02
+sides = 16
 material = SubResource("StandardMaterial3D_uq36a")
 
 [node name="SubViewport" type="SubViewport" parent="." unique_id=2078826839]
