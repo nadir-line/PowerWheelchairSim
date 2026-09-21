@@ -144,6 +144,7 @@ func _process(delta):
 	$Model/CastorRight/WheelFrontRight.rotation.x = $WheelFrontRight.rotation.x
 	
 	$HUDBasic.current_speed = linear_velocity.length()
+	$SubViewport/SystemsDisplay.current_speed = linear_velocity.length()
 	
 	# 3D model joystick
 	$AttachPtArm/PvArm/PvCon/Con/Joystick.rotation.z = -0.2 * input_joystick.x
