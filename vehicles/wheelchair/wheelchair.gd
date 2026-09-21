@@ -8,6 +8,8 @@ extends VehicleBody3D
 @export var WHEELBASE_WIDTH: float = 1
 @export var WHEEL_RADIUS_REAR: float = 1
 
+var batt_lvl: float = 1
+
 var input_joystick: Vector2 = Vector2.ZERO
 
 var linear_velocity_local: Vector3 = Vector3.ZERO
@@ -45,6 +47,7 @@ func _ready():
 #	DebugOverlay.stats.add_property(self, "wheel_velocity_ratio", "")
 #	DebugOverlay.stats.add_property(self, "turn_radius", "")
 	#DebugOverlay.stats.add_property(self, "linear_velocity_local", "round")
+	DebugOverlay.stats.add_property(self, "batt_lvl", "")
 	pass # Replace with function body.
 
 func interpolate_linear(value_current, value_target, rate, delta_time):
@@ -121,7 +124,10 @@ func _physics_process(delta):
 		steering_lerp_factor
 		))
 	
-	pass
+	# Battery
+	batt_lvl -= 0.00000001 * abs($WheelRearLeft.engine_force)
+	batt_lvl -= 0.00000001 * abs($WheelRearRight.engine_force)
+	batt_lvl = clamp(batt_lvl, 0, 1)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -143,8 +149,10 @@ func _process(delta):
 	$Model/CastorLeft/WheelFrontLeft.rotation.x = $WheelFrontLeft.rotation.x
 	$Model/CastorRight/WheelFrontRight.rotation.x = $WheelFrontRight.rotation.x
 	
+	# Gauges
 	$HUDBasic.current_speed = linear_velocity.length()
 	$SubViewport/SystemsDisplay.current_speed = linear_velocity.length()
+	$SubViewport/SystemsDisplay.batt_pct = 100 * batt_lvl
 	
 	# 3D model joystick
 	$AttachPtArm/PvArm/PvCon/Con/Joystick.rotation.z = -0.2 * input_joystick.x

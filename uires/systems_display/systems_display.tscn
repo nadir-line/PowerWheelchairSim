@@ -48,7 +48,7 @@ size_flags_horizontal = 3
 text = "SPD"
 horizontal_alignment = 1
 
-[node name="Bat" type="Label" parent="Grid" unique_id=1641791003]
+[node name="Batt" type="Label" parent="Grid" unique_id=1641791003]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "XXX"
