@@ -6,8 +6,8 @@
 [ext_resource type="PackedScene" uid="uid://nqnoncdfygcf" path="res://terrain/terrain_pbr/terrain_pbr.tscn" id="4_7ddre"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_x84t8"]
-sky_top_color = Color(2.2140146e-06, 0.42444286, 0.5623873, 1)
-sky_energy_multiplier = 1.6
+sky_top_color = Color(0.27992854, 0.5800092, 0.85636646, 1)
+energy_multiplier = 2.0
 
 [sub_resource type="Sky" id="Sky_rih0r"]
 sky_material = SubResource("ProceduralSkyMaterial_x84t8")
@@ -15,6 +15,10 @@ sky_material = SubResource("ProceduralSkyMaterial_x84t8")
 [sub_resource type="Environment" id="Environment_3o5kj"]
 background_mode = 2
 sky = SubResource("Sky_rih0r")
+ambient_light_source = 2
+ambient_light_color = Color(0.546752, 0.8960554, 0.97250134, 1)
+ambient_light_energy = 0.2
+reflected_light_source = 2
 
 [sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_40cm2"]
 
