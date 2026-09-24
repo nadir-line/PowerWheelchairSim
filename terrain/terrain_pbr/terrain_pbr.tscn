@@ -9,11 +9,39 @@
 [ext_resource type="Texture2D" uid="uid://dnxsaclnl5vb6" path="res://terrain/terrain_pbr/terrain_pbr_slot0_normal_roughness.png" id="6_4uldo"]
 [ext_resource type="ArrayMesh" uid="uid://di1uriwtn5qfu" path="res://addons/zylann.hterrain/models/grass_quad_x4.obj" id="6_ai2i4"]
 [ext_resource type="Texture2D" uid="uid://be3hqpnjb83uk" path="res://addons/zylann.hterrain/tools/icons/icon_detail_layer_node.svg" id="7_cerja"]
+[ext_resource type="PackedScene" uid="uid://c7vk3dblv23sr" path="res://assets/modern_house/modern_house.tscn" id="10_315gu"]
 
 [sub_resource type="Resource" id="Resource_umtdh"]
 script = ExtResource("2_u5u1b")
 mode = 0
 textures = [[ExtResource("4_j3fjq")], [ExtResource("6_4uldo")]]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_315gu"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_qjeyg"]
+noise = SubResource("FastNoiseLite_315gu")
+seamless = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x2sqx"]
+albedo_texture = SubResource("NoiseTexture2D_qjeyg")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_pjlft"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_rnaij"]
+noise = SubResource("FastNoiseLite_pjlft")
+seamless = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ylquk"]
+albedo_texture = SubResource("NoiseTexture2D_rnaij")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_stjoo"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_6qxox"]
+noise = SubResource("FastNoiseLite_stjoo")
+seamless = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x8dqa"]
+albedo_texture = SubResource("NoiseTexture2D_6qxox")
 
 [node name="TerrainPBR" type="Node3D" unique_id=1990854739]
 script = ExtResource("1_056hm")
@@ -50,3 +78,26 @@ shader_params/u_bottom_ao = null
 shader_params/u_instance_scale = Vector3(0.5, 0.5, 0.5)
 shader_params/u_roughness = 1.0
 metadata/_editor_icon = ExtResource("7_cerja")
+
+[node name="ModernHouse" parent="." unique_id=1361851738 instance=ExtResource("10_315gu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
+
+[node name="Bridge" type="Node3D" parent="." unique_id=967131557]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0.95, 7.16018)
+
+[node name="Plank01" type="CSGBox3D" parent="Bridge" unique_id=313954044]
+use_collision = true
+size = Vector3(1.2, 0.1, 8)
+material = SubResource("StandardMaterial3D_x2sqx")
+
+[node name="Ramp01" type="CSGBox3D" parent="Bridge" unique_id=260002717]
+transform = Transform3D(1, 0, 0, 0, 0.990268, -0.139173, 0, 0.139173, 0.990268, 0, -1.0009999, 7.83982)
+use_collision = true
+size = Vector3(1.2, 1, 8)
+material = SubResource("StandardMaterial3D_ylquk")
+
+[node name="Ramp02" type="CSGBox3D" parent="Bridge" unique_id=1070443186]
+transform = Transform3D(-1, -1.21669e-08, -8.6572e-08, 0, 0.990268, -0.139173, 8.74228e-08, -0.139173, -0.990268, 0, -1.0009999, -7.854762)
+use_collision = true
+size = Vector3(1.2, 1, 8)
+material = SubResource("StandardMaterial3D_x8dqa")
