@@ -4,31 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://db33kxe003a6r" path="res://objects/traffic_cone/traffic_cone.tscn" id="4"]
 [ext_resource type="PackedScene" uid="uid://nqnoncdfygcf" path="res://terrain/terrain_pbr/terrain_pbr.tscn" id="4_7ddre"]
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_x84t8"]
-sky_top_color = Color(0.27992854, 0.5800092, 0.85636646, 1)
-energy_multiplier = 2.0
-
-[sub_resource type="Sky" id="Sky_rih0r"]
-sky_material = SubResource("ProceduralSkyMaterial_x84t8")
-
-[sub_resource type="Environment" id="Environment_3o5kj"]
-background_mode = 2
-sky = SubResource("Sky_rih0r")
-ambient_light_source = 2
-ambient_light_color = Color(0.546752, 0.8960554, 0.97250134, 1)
-ambient_light_energy = 0.2
-reflected_light_source = 2
-
-[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_40cm2"]
-
-[sub_resource type="Compositor" id="Compositor_o28ja"]
-
 [node name="TestScene" type="Node3D" unique_id=94623899]
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=618770597]
-environment = SubResource("Environment_3o5kj")
-camera_attributes = SubResource("CameraAttributesPractical_40cm2")
-compositor = SubResource("Compositor_o28ja")
 
 [node name="Wheelchair" parent="." unique_id=365094530 instance=ExtResource("2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.52, 20.8348)
