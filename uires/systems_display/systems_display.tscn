@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://cjv2lfcskjch1"]
 
-[ext_resource type="FontFile" uid="uid://6hy24fcmknn0" path="res://assets/fonts/B612Mono-Regular.ttf" id="1_p8pil"]
+[ext_resource type="FontFile" uid="uid://dba2yoyaa20dg" path="res://assets/fonts/B612Mono-Bold.ttf" id="1_s5ptr"]
 [ext_resource type="Script" uid="uid://skixb4lg280l" path="res://uires/systems_display/systems_display.gd" id="2_s5ptr"]
 
 [sub_resource type="Theme" id="Theme_s5ptr"]
-default_font = ExtResource("1_p8pil")
+default_font = ExtResource("1_s5ptr")
 default_font_size = 100
 
 [node name="SystemsDisplay" type="Control" unique_id=1097086768]
