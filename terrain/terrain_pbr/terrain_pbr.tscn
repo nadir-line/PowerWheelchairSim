@@ -16,6 +16,25 @@ script = ExtResource("2_u5u1b")
 mode = 0
 textures = [[ExtResource("4_j3fjq")], [ExtResource("6_4uldo")]]
 
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_315gu"]
+sky_top_color = Color(0.27992854, 0.5800092, 0.85636646, 1)
+energy_multiplier = 2.0
+
+[sub_resource type="Sky" id="Sky_rih0r"]
+sky_material = SubResource("ProceduralSkyMaterial_315gu")
+
+[sub_resource type="Environment" id="Environment_x2sqx"]
+background_mode = 2
+sky = SubResource("Sky_rih0r")
+ambient_light_source = 2
+ambient_light_color = Color(0.546752, 0.8960554, 0.97250134, 1)
+ambient_light_energy = 0.2
+reflected_light_source = 2
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_pjlft"]
+
+[sub_resource type="Compositor" id="Compositor_ylquk"]
+
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_315gu"]
 
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_qjeyg"]
@@ -78,6 +97,11 @@ shader_params/u_bottom_ao = null
 shader_params/u_instance_scale = Vector3(0.5, 0.5, 0.5)
 shader_params/u_roughness = 1.0
 metadata/_editor_icon = ExtResource("7_cerja")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1163544886]
+environment = SubResource("Environment_x2sqx")
+camera_attributes = SubResource("CameraAttributesPractical_pjlft")
+compositor = SubResource("Compositor_ylquk")
 
 [node name="ModernHouse" parent="." unique_id=1361851738 instance=ExtResource("10_315gu")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
