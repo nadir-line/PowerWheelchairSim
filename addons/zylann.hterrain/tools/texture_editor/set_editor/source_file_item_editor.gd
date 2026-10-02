@@ -21,11 +21,11 @@ var _material : Material
 var _is_empty := true
 
 
-func set_label(text: String):
+func set_label(text: String) -> void:
 	_label.text = text
 
 
-func set_texture(tex: Texture):
+func set_texture(tex: Texture) -> void:
 	if tex == null:
 		_texture_rect.texture = load(EMPTY_TEXTURE_PATH)
 		_texture_rect.material = null
@@ -36,24 +36,24 @@ func set_texture(tex: Texture):
 		_is_empty = false
 
 
-func set_texture_tooltip(msg: String):
+func set_texture_tooltip(msg: String) -> void:
 	_texture_rect.tooltip_text = msg
 
 
-func _on_LoadButton_pressed():
+func _on_LoadButton_pressed() -> void:
 	load_pressed.emit()
 
 
-func _on_ClearButton_pressed():
+func _on_ClearButton_pressed() -> void:
 	clear_pressed.emit()
 
 
-func set_material(mat: Material):
+func set_material(mat: Material) -> void:
 	_material = mat
 	if not _is_empty:
 		_texture_rect.material = _material
 
 
-func set_enabled(enabled: bool):
+func set_enabled(enabled: bool) -> void:
 	for b in _buttons:
 		b.disabled = not enabled

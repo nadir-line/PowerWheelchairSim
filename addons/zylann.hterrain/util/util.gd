@@ -119,8 +119,13 @@ static func is_in_edited_scene(node: Node) -> bool:
 # Get an extended or cropped version of an image,
 # with optional anchoring to decide in which direction to extend or crop.
 # New pixels are filled with the provided fill color.
-static func get_cropped_image(src: Image, width: int, height: int, 
-	fill_color=null, anchor=Vector2(-1, -1)) -> Image:
+static func get_cropped_image(
+	src: Image,
+	width: int, 
+	height: int, 
+	fill_color=null, # ?Color
+	anchor=Vector2(-1, -1)
+) -> Image:
 	
 	width = int(width)
 	height = int(height)
@@ -135,8 +140,13 @@ static func get_cropped_image(src: Image, width: int, height: int,
 	return im
 
 
-static func get_cropped_image_params(src_w: int, src_h: int, dst_w: int, dst_h: int, 
-	anchor: Vector2) -> Dictionary:
+static func get_cropped_image_params(
+	src_w: int, 
+	src_h: int, 
+	dst_w: int, 
+	dst_h: int, 
+	anchor: Vector2
+) -> Dictionary:
 	
 	var rel_anchor := (anchor + Vector2(1, 1)) / 2.0
 
@@ -200,7 +210,7 @@ static func get_cropped_image_params(src_w: int, src_h: int, dst_w: int, dst_h: 
 # Generic way to apply editor scale to a plugin UI scene.
 # It is slower than doing it manually on specific controls.
 # Takes a node as root because since Godot 4 Window dialogs are no longer Controls.
-static func apply_dpi_scale(root: Node, dpi_scale: float):
+static func apply_dpi_scale(root: Node, dpi_scale: float) -> void:
 	if dpi_scale == 1.0:
 		return
 	var to_process := [root]
@@ -229,15 +239,18 @@ static func apply_dpi_scale(root: Node, dpi_scale: float):
 # So we have to rely on a less efficient method.
 # Returns a list of intersections between an AABB and a segment, sorted
 # by distance to the beginning of the segment.
-static func get_aabb_intersection_with_segment(aabb: AABB, 
-	segment_begin: Vector3, segment_end: Vector3) -> Array:
+static func get_aabb_intersection_with_segment(
+	aabb: AABB, 
+	segment_begin: Vector3, 
+	segment_end: Vector3
+) -> Array:
 
 	var hits := []
 	
 	if not aabb.intersects_segment(segment_begin, segment_end):
 		return hits
 	
-	var hit
+	var hit # : ?Plane
 	
 	var x_rect := Rect2(aabb.position.y, aabb.position.z, aabb.size.y, aabb.size.z)
 	
@@ -305,8 +318,12 @@ class HT_GridRaytraceResult2D:
 # 687780af6b491056700cfb22cab57e61aeec6ab8/src/BulletCollision/CollisionShapes/
 # btHeightfieldTerrainShape.cpp#L418
 #
-static func grid_raytrace_2d(ray_origin: Vector2, ray_direction: Vector2, 
-	quad_predicate: Callable, max_distance: float) -> HT_GridRaytraceResult2D:
+static func grid_raytrace_2d(
+	ray_origin: Vector2, 
+	ray_direction: Vector2, 
+	quad_predicate: Callable, # (prev_x: int, prev_y: int, prev_param: float, param: float) -> bool
+	max_distance: float
+) -> HT_GridRaytraceResult2D:
 	
 	if max_distance < 0.0001:
 		# Consider the ray is too small to hit anything
@@ -421,8 +438,11 @@ static func grid_raytrace_2d(ray_origin: Vector2, ray_direction: Vector2,
 	return null
 
 
-static func get_segment_clipped_by_rect(rect: Rect2, 
-	segment_begin: Vector2, segment_end: Vector2) -> Array:
+static func get_segment_clipped_by_rect(
+	rect: Rect2, 
+	segment_begin: Vector2, 
+	segment_end: Vector2
+) -> Array:
 	
 	#         /
 	#  A-----/---B        A-----+---B
@@ -481,7 +501,7 @@ static func get_pixel_clamped(im: Image, x: int, y: int) -> Color:
 	return im.get_pixel(x, y)
 
 
-static func update_configuration_warning(node: Node, recursive: bool):
+static func update_configuration_warning(node: Node, recursive: bool) -> void:
 	if not Engine.is_editor_hint():
 		return
 	node.update_configuration_warnings()
@@ -521,7 +541,11 @@ static func write_import_file(settings: Dictionary, imp_fpath: String, logger) -
 
 
 static func update_texture_partial(
-	tex: ImageTexture, im: Image, src_rect: Rect2i, dst_pos: Vector2i):
+	tex: ImageTexture, 
+	im: Image, 
+	src_rect: Rect2i, 
+	dst_pos: Vector2i
+) -> void:
 	
 	#               ..ooo@@@XXX%%%xx..
 	#            .oo@@XXX%x%xxx..     ` .
@@ -547,3 +571,17 @@ static func update_texture_partial(
 	fuck.blit_rect(im, src_rect, dst_pos)
 	tex.update(fuck)
 
+
+# Should be used because if `set_shader_parameter` has never been called, `get_shader_parameter` 
+# will return null even if the shader's corresponding uniform has a default value.
+# See https://github.com/godotengine/godot/issues/44454
+static func get_shader_material_parameter(
+	material: ShaderMaterial, 
+	param_name: StringName
+) -> Variant:
+	var v = material.get_shader_parameter(param_name)
+	if v == null:
+		var shader : Shader = material.shader
+		if shader != null:
+			v = RenderingServer.shader_get_parameter_default(shader.get_rid(), param_name)
+	return v

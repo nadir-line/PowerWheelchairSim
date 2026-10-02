@@ -10,12 +10,17 @@ const HT_Painter = preload("./painter.gd")
 
 const SHAPES_DIR = "addons/zylann.hterrain/tools/brush/shapes"
 const DEFAULT_BRUSH_TEXTURE_PATH = SHAPES_DIR + "/round2.exr"
+
 # Reasonable size for sliders to be usable
+const MIN_SIZE_FOR_SLIDERS = 2
 const MAX_SIZE_FOR_SLIDERS = 500
+const MIN_OPACITY_FOR_SLIDERS = 0
+const MAX_OPACITY_FOR_SLIDERS = 100
 # Absolute size limit. Terrains can't be larger than that, and it will be very slow to paint
 const MAX_SIZE = 4000
 
 signal size_changed(new_size)
+signal opacity_changed(new_opacity: float)
 signal shapes_changed
 signal shape_index_changed
 
@@ -37,7 +42,7 @@ var _prev_position := Vector2(-999, -999)
 var _prev_time_ms := 0
 
 
-func set_size(size: int):
+func set_size(size: int) -> void:
 	if size < 1:
 		size = 1
 	if size != _size:
@@ -49,15 +54,19 @@ func get_size() -> int:
 	return _size
 
 
-func set_opacity(opacity: float):
-	_opacity = clampf(opacity, 0.0, 1.0)
+func set_opacity(opacity: float) -> void:
+	var new_opacity := clampf(opacity, 0.0, 1.0)
+
+	if new_opacity != _opacity:
+		_opacity = new_opacity
+		opacity_changed.emit(_opacity)
 
 
 func get_opacity() -> float:
 	return _opacity
 
 
-func set_random_rotation_enabled(enabled: bool):
+func set_random_rotation_enabled(enabled: bool) -> void:
 	_random_rotation = enabled
 
 
@@ -73,7 +82,7 @@ func is_pressure_enabled() -> bool:
 	return _pressure_enabled
 
 
-func set_pressure_over_scale(amount: float):
+func set_pressure_over_scale(amount: float) -> void:
 	_pressure_over_scale = clampf(amount, 0.0, 1.0)
 
 
@@ -89,7 +98,7 @@ func get_pressure_over_opacity() -> float:
 	return _pressure_over_opacity
 
 
-func set_frequency_distance(d: float):
+func set_frequency_distance(d: float) -> void:
 	_frequency_distance = maxf(d, 0.0)
 
 
@@ -97,7 +106,7 @@ func get_frequency_distance() -> float:
 	return _frequency_distance
 
 
-func set_frequency_time_ms(t: int):
+func set_frequency_time_ms(t: int) -> void:
 	if t < 0:
 		t = 0
 	_frequency_time_ms = t
@@ -107,7 +116,7 @@ func get_frequency_time_ms() -> int:
 	return _frequency_time_ms
 
 
-func set_shapes(shapes: Array[Texture2D]):
+func set_shapes(shapes: Array[Texture2D]) -> void:
 	assert(len(shapes) >= 1)
 	for s in shapes:
 		assert(s != null)
@@ -130,14 +139,14 @@ func get_shape_index() -> int:
 	return _shape_index
 
 
-func set_shape_index(i: int):
+func set_shape_index(i: int) -> void:
 	assert(i >= 0)
 	assert(i < len(_shapes))
 	_shape_index = i
 	shape_index_changed.emit()
 
 
-func set_shape_cycling_enabled(enable: bool):
+func set_shape_cycling_enabled(enable: bool) -> void:
 	_shape_cycling_enabled = enable
 
 
@@ -147,7 +156,7 @@ func is_shape_cycling_enabled() -> bool:
 
 static func load_shape_from_image_file(fpath: String, logger, retries := 1) -> Texture2D:
 	var im := Image.new()
-	var err := im.load(fpath)
+	var err := im.load(ProjectSettings.globalize_path(fpath))
 	if err != OK:
 		if retries > 0:
 			# TODO There is a bug with Godot randomly being unable to load images.
@@ -210,8 +219,6 @@ func configure_paint_input(painters: Array[HT_Painter], position: Vector2, press
 
 
 # Call this when the user releases the pen or mouse button
-func on_paint_end():
+func on_paint_end() -> void:
 	_prev_position = Vector2(-999, -999)
 	_prev_time_ms = 0
-
-

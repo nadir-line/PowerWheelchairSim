@@ -1,7 +1,7 @@
 shader_type spatial;
 render_mode cull_disabled;
 
-#include "include/heightmap.gdshaderinc"
+#include "res://addons/zylann.hterrain/shaders/include/heightmap.gdshaderinc"
 
 uniform sampler2D u_terrain_heightmap;
 uniform sampler2D u_terrain_detailmap;
@@ -10,7 +10,10 @@ uniform sampler2D u_terrain_globalmap : source_color;
 uniform mat4 u_terrain_inverse_transform;
 uniform mat3 u_terrain_normal_basis;
 
-uniform sampler2D u_albedo_alpha : source_color;
+// We need to disable repetition, otherwise it can cause "lines" to appear on top of grass quads
+// due to filtering, especially when MSAA is enabled
+uniform sampler2D u_albedo_alpha : source_color, repeat_disable;
+
 uniform float u_view_distance = 100.0;
 uniform float u_globalmap_tint_bottom : hint_range(0.0, 1.0);
 uniform float u_globalmap_tint_top : hint_range(0.0, 1.0);
@@ -59,7 +62,13 @@ void vertex() {
 	v_map_uv = map_uv;
 
 	//float density = 0.5 + 0.5 * sin(4.0*TIME); // test
-	float density = texture(u_terrain_detailmap, map_uv).r;
+	float density = 0.0;
+	// Force density to be 0 outside of bounds. This can be necessary when terrain is scaled,
+	// as detail chunks will keep their size and may partially overlap outside bounds at the edges
+	// of the terrain.
+	if (map_uv.x >= 0.0 && map_uv.y >= 0.0 && map_uv.x < 1.0 && map_uv.y < 1.0) {
+		density = texture(u_terrain_detailmap, map_uv).r;
+	}
 	float hash = get_hash(obj_pos.xz);
 	
 	if (density > hash) {

@@ -4,7 +4,15 @@ shader_type spatial;
 // it should be preferred for high-end graphics cards.
 // For less features but lower-end targets, see the lite version.
 
-#include "include/heightmap.gdshaderinc"
+// TODO Figure out why sampling colormap or splatmap in vertex shader leads to artifacts.
+// At extremely shallow angles (such as horizon), some pixels start to flash.
+// It appears to be caused by interpolation between the vertex and fragment shaders, leading to
+// color values going largely outside of 0..1.
+// See https://github.com/Zylann/godot_heightmap_plugin/issues/469
+//#define COLORMAP_PER_VERTEX
+//#define SPLATMAP_PER_VERTEX
+
+#include "res://addons/zylann.hterrain/shaders/include/heightmap.gdshaderinc"
 
 uniform sampler2D u_terrain_heightmap;
 uniform sampler2D u_terrain_normalmap;
@@ -44,12 +52,18 @@ uniform float u_globalmap_blend_distance;
 
 uniform vec4 u_colormap_opacity_per_texture = vec4(1.0, 1.0, 1.0, 1.0);
 
+uniform float u_specular = 0.5;
+
+#ifdef COLORMAP_PER_VERTEX
 varying float v_hole;
 varying vec3 v_tint0;
 varying vec3 v_tint1;
 varying vec3 v_tint2;
 varying vec3 v_tint3;
+#endif
+#ifdef SPLATMAP_PER_VERTEX
 varying vec4 v_splat;
+#endif
 varying vec2 v_ground_uv0;
 varying vec2 v_ground_uv1;
 varying vec2 v_ground_uv2;
@@ -123,13 +137,13 @@ vec4 texture_antitile(sampler2D albedo_tex, sampler2D normal_tex, vec2 uv, out v
 	float frequency = 2.0;
 	float scale = 1.3;
 	float sharpness = 0.7;
-	
+
 	// Rotate and scale UV
 	float rot = 3.14 * 0.6;
 	float cosa = cos(rot);
 	float sina = sin(rot);
 	vec2 uv2 = rotate(uv, cosa, sina) * scale;
-	
+
 	vec4 col0 = texture(albedo_tex, uv);
 	vec4 col1 = texture(albedo_tex, uv2);
 	vec4 nrm0 = texture(normal_tex, uv);
@@ -142,10 +156,10 @@ vec4 texture_antitile(sampler2D albedo_tex, sampler2D normal_tex, vec2 uv, out v
 	// Had to negate the Y axis for some reason. I never remember the myriad of conventions around
 	n.xz = rotate(n.xz, cosa, -sina);
 	nrm1 = pack_normal(n, nrm1.a);
-	
+
 	// Periodically alternate between the two versions using a warped checker pattern
-	float t = 1.2 + 
-		  sin(uv2.x * frequency + sin(uv.x) * 2.0) 
+	float t = 1.2 +
+		  sin(uv2.x * frequency + sin(uv.x) * 2.0)
 		* cos(uv2.y * frequency + sin(uv.y) * 2.0); // Result in [0..2]
 	t = smoothstep(sharpness, 2.0 - sharpness, t);
 
@@ -175,6 +189,7 @@ void vertex() {
 	v_ground_uv2 = base_ground_uv.xz / u_ground_uv_scale_per_texture.z;
 	v_ground_uv3 = base_ground_uv / u_ground_uv_scale_per_texture.w;
 
+#ifdef COLORMAP_PER_VERTEX
 	// Putting this in vertex saves 2 fetches from the fragment shader,
 	// which is good for performance at a negligible quality cost,
 	// provided that geometry is a regular grid that decimates with LOD.
@@ -185,7 +200,10 @@ void vertex() {
 	v_tint1 = mix(vec3(1.0), tint.rgb, u_colormap_opacity_per_texture.y);
 	v_tint2 = mix(vec3(1.0), tint.rgb, u_colormap_opacity_per_texture.z);
 	v_tint3 = mix(vec3(1.0), tint.rgb, u_colormap_opacity_per_texture.w);
+#endif
+#ifdef SPLATMAP_PER_VERTEX
 	v_splat = texture(u_terrain_splatmap, UV);
+#endif
 
 	// Need to use u_terrain_normal_basis to handle scaling.
 	NORMAL = u_terrain_normal_basis * unpack_normal(texture(u_terrain_normalmap, UV));
@@ -194,17 +212,30 @@ void vertex() {
 }
 
 void fragment() {
+#ifndef COLORMAP_PER_VERTEX
+	vec4 tint = texture(u_terrain_colormap, UV);
+	float v_hole = tint.a;
+	vec3 v_tint0 = mix(vec3(1.0), tint.rgb, u_colormap_opacity_per_texture.x);
+	vec3 v_tint1 = mix(vec3(1.0), tint.rgb, u_colormap_opacity_per_texture.y);
+	vec3 v_tint2 = mix(vec3(1.0), tint.rgb, u_colormap_opacity_per_texture.z);
+	vec3 v_tint3 = mix(vec3(1.0), tint.rgb, u_colormap_opacity_per_texture.w);
+#endif
+
 	if (v_hole < 0.5) {
 		// TODO Add option to use vertex discarding instead, using NaNs
 		discard;
 	}
 
-	vec3 terrain_normal_world = 
+#ifndef SPLATMAP_PER_VERTEX
+	vec4 v_splat = texture(u_terrain_splatmap, UV);
+#endif
+
+	vec3 terrain_normal_world =
 		u_terrain_normal_basis * unpack_normal(texture(u_terrain_normalmap, UV));
 	terrain_normal_world = normalize(terrain_normal_world);
 	vec3 normal = terrain_normal_world;
 
-	float globalmap_factor = clamp((v_distance_to_camera - u_globalmap_blend_start) 
+	float globalmap_factor = clamp((v_distance_to_camera - u_globalmap_blend_start)
 		* u_globalmap_blend_distance, 0.0, 1.0);
 	globalmap_factor *= globalmap_factor; // slower start, faster transition but far away
 	vec3 global_albedo = texture(u_terrain_globalmap, UV).rgb;
@@ -326,4 +357,5 @@ void fragment() {
 //	}
 
 	NORMAL = (VIEW_MATRIX * (vec4(normal, 0.0))).xyz;
+	SPECULAR = u_specular;
 }

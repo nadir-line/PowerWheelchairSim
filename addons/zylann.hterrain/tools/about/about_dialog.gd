@@ -13,7 +13,7 @@ const PLUGIN_CFG_PATH = "res://addons/zylann.hterrain/plugin.cfg"
 var _logger = HT_Logger.get_for(self)
 
 
-func _ready():
+func _ready() -> void:
 	if HT_Util.is_in_edited_scene(self):
 		return
 

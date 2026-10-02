@@ -58,7 +58,7 @@ var _logger = HT_Logger.get_for(self)
 var _terrain : HTerrain = null
 
 
-func set_terrain(terrain: HTerrain):
+func set_terrain(terrain: HTerrain) -> void:
 	_terrain = terrain
 
 
@@ -66,11 +66,11 @@ static func _get_icon(name) -> Texture2D:
 	return load("res://addons/zylann.hterrain/tools/icons/icon_" + name + ".svg")
 
 
-func _init():
+func _init() -> void:
 	get_ok_button().hide()
 
 
-func _ready():
+func _ready() -> void:
 	if HT_Util.is_in_edited_scene(self):
 		return
 	# TEST
@@ -104,7 +104,7 @@ func _ready():
 	_on_AnchorButton_pressed(_selected_anchor, 0, 0)
 
 
-func _notification(what: int):
+func _notification(what: int) -> void:
 	if what == NOTIFICATION_VISIBILITY_CHANGED:
 		if visible:
 			# Select current resolution
@@ -116,17 +116,17 @@ func _notification(what: int):
 						break
 
 
-func _on_AnchorButton_pressed(anchor0: int, x0: int, y0: int):
+func _on_AnchorButton_pressed(anchor0: int, x0: int, y0: int) -> void:
 	_selected_anchor = anchor0
 	
 	for button in _anchor_buttons:
 		button.icon = null
 	
 	for anchor in ANCHOR_COUNT:
-		var d = _anchor_dirs[anchor]
-		var nx = x0 + d[0]
-		var ny = y0 + d[1]
-		var k = Vector2(nx, ny)
+		var d: Array = _anchor_dirs[anchor]
+		var nx: int = x0 + d[0]
+		var ny: int = y0 + d[1]
+		var k := Vector2(nx, ny)
 		if not _anchor_buttons_grid.has(k):
 			continue
 		var button : Button = _anchor_buttons_grid[k]
@@ -134,12 +134,12 @@ func _on_AnchorButton_pressed(anchor0: int, x0: int, y0: int):
 		button.icon = icon
 
 
-func _set_anchor_control_active(active: bool):
+func _set_anchor_control_active(active: bool) -> void:
 	for button in _anchor_buttons:
 		button.disabled = not active
 
 
-func _on_ResolutionDropdown_item_selected(id):
+func _on_ResolutionDropdown_item_selected(id) -> void:
 	pass
 
 
@@ -147,7 +147,7 @@ func _on_StretchCheckBox_toggled(button_pressed: bool):
 	_set_anchor_control_active(not button_pressed)
 
 
-func _on_ApplyButton_pressed():
+func _on_ApplyButton_pressed() -> void:
 	var stretch = _stretch_checkbox.button_pressed
 	var res = _resolutions[_resolution_dropdown.get_selected_id()]
 	var dir = _anchor_dirs[_selected_anchor]
@@ -155,11 +155,11 @@ func _on_ApplyButton_pressed():
 	hide()
 
 
-func _on_CancelButton_pressed():
+func _on_CancelButton_pressed() -> void:
 	hide()
 
 
-func _apply(p_resolution: int, p_stretch: bool, p_anchor: Vector2):
+func _apply(p_resolution: int, p_stretch: bool, p_anchor: Vector2) -> void:
 	if _terrain == null:
 		_logger.error("Cannot apply resize, terrain is not set")
 		return

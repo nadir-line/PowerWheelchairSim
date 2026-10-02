@@ -76,12 +76,15 @@ static func load_bounds(f: FileAccess) -> HT_XYZBounds:
 # Loads points into an image with existing dimensions and format.
 # `f` must be positioned at the beginning of the series of points.
 # If `bounds` is `null`, it will be computed.
-static func load_heightmap(f: FileAccess, dst_image: Image, bounds: HT_XYZBounds):
+static func load_heightmap(f: FileAccess, dst_image: Image, bounds: HT_XYZBounds) -> void:
 	# We are not going to read the entire file directly in memory, because it can be really big.
 	# Instead we'll parse it directly and the only thing we retain in memory is the heightmap.
 	# This can be really slow on big files. If we can assume the file is square and points
 	# separated by 1 unit each in a grid pattern, it could be a bit faster, but
 	# parsing points from text really is the main bottleneck (40 seconds to load a 2000x2000 file!).
+	
+	var dst_format := dst_image.get_format()
+	assert(dst_format == Image.FORMAT_RF or dst_format == Image.FORMAT_RH)
 	
 	# Bounds can be precalculated
 	if bounds == null:
@@ -106,4 +109,3 @@ static func load_heightmap(f: FileAccess, dst_image: Image, bounds: HT_XYZBounds
 		# `Rect2i` would be better but is only available in Godot 4.
 		if x >= 0 and y >= 0 and x < dst_image.get_width() and y < dst_image.get_height():
 			dst_image.set_pixel(x, y, Color(floats[2], 0, 0))
-

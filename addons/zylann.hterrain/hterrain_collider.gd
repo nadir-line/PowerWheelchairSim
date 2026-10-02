@@ -9,8 +9,7 @@ var _terrain_transform := Transform3D()
 var _terrain_data : HTerrainData = null
 var _logger = HT_Logger.get_for(self)
 
-
-func _init(attached_node: Node, initial_layer: int, initial_mask: int):
+func _init(attached_node: Node, initial_layer: int, initial_mask: int) -> void:
 	_logger.debug("HTerrainCollider: creating body")
 	assert(attached_node != null)
 	_shape_rid = PhysicsServer3D.heightmap_shape_create()
@@ -28,7 +27,7 @@ func _init(attached_node: Node, initial_layer: int, initial_mask: int):
 	PhysicsServer3D.shape_set_data(_shape_rid, {
 		"width": 2,
 		"depth": 2,
-		"heights": PackedFloat32Array([0, 0, 0, 0]),
+		"heights": PackedFloat64Array([0, 0, 0, 0]) if _is_double_precision_build() else PackedFloat32Array([0, 0, 0, 0]),
 		"min_height": -1,
 		"max_height": 1
 	})
@@ -39,15 +38,50 @@ func _init(attached_node: Node, initial_layer: int, initial_mask: int):
 	PhysicsServer3D.body_attach_object_instance_id(_body_rid, attached_node.get_instance_id())
 
 
-func set_collision_layer(layer: int):
+static func _is_double_precision_build() -> bool:
+	return ProjectSettings.get_setting("application/config/features").has("Double Precision")
+
+
+static func _packed32_to_packed64(p32: PackedFloat32Array) -> PackedFloat64Array:
+	# This is a slower brute-force method as a workaround to double-precision builds requiring PackedFloat64Array. Otherwise, colliders would fail to build on double-precision builds entirely.
+	# In an ideal world Godot would be updated to accept a PackedFloat32Array since it uses it under the hood anyways
+	var p64 = PackedFloat64Array();
+	p64.resize(p32.size())
+	for i in p32.size():
+		p64.set(i, p32[i]);
+	return p64;
+
+
+func set_collision_layer(layer: int) -> void:
 	PhysicsServer3D.body_set_collision_layer(_body_rid, layer)
 
 
-func set_collision_mask(mask: int):
+func set_collision_mask(mask: int) -> void:
 	PhysicsServer3D.body_set_collision_mask(_body_rid, mask)
 
 
-func _notification(what: int):
+func update_physics_material(physics_material: PhysicsMaterial) -> void:
+	# Logic based on Godot `static_body.cpp`
+	
+	var ps := PhysicsServer3D
+	if physics_material == null:
+		# Reset to defaults
+		ps.body_set_param(_body_rid, PhysicsServer3D.BODY_PARAM_BOUNCE, 0)
+		ps.body_set_param(_body_rid, PhysicsServer3D.BODY_PARAM_FRICTION, 1)
+	
+	else:
+		var bounce := physics_material.bounce
+		if physics_material.absorbent:
+			bounce = -bounce
+		ps.body_set_param(_body_rid, PhysicsServer3D.BODY_PARAM_BOUNCE, bounce)
+		
+		var friction := physics_material.friction
+		if physics_material.rough:
+			friction = -friction
+		ps.body_set_param(_body_rid, PhysicsServer3D.BODY_PARAM_FRICTION, friction)
+
+
+func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		_logger.debug("Destroy HTerrainCollider")
 		PhysicsServer3D.free_rid(_body_rid)
@@ -55,18 +89,18 @@ func _notification(what: int):
 		PhysicsServer3D.free_rid(_shape_rid)
 
 
-func set_transform(transform: Transform3D):
+func set_transform(transform: Transform3D) -> void:
 	assert(_body_rid != RID())
 	_terrain_transform = transform
 	_update_transform()
 
 
-func set_world(world: World3D):
+func set_world(world: World3D) -> void:
 	assert(_body_rid != RID())
 	PhysicsServer3D.body_set_space(_body_rid, world.get_space() if world != null else RID())
 
 
-func create_from_terrain_data(terrain_data: HTerrainData):
+func create_from_terrain_data(terrain_data: HTerrainData) -> void:
 	assert(terrain_data != null)
 	assert(not terrain_data.is_locked())
 	_logger.debug("HTerrainCollider: setting up heightmap")
@@ -82,17 +116,16 @@ func create_from_terrain_data(terrain_data: HTerrainData):
 	var shape_data = {
 		"width": terrain_data.get_resolution(),
 		"depth": terrain_data.get_resolution(),
-		"heights": terrain_data.get_all_heights(),
+		"heights": _packed32_to_packed64(terrain_data.get_all_heights()) if _is_double_precision_build() else terrain_data.get_all_heights(),
 		"min_height": aabb.position.y,
 		"max_height": aabb.end.y
 	}
-
 	PhysicsServer3D.shape_set_data(_shape_rid, shape_data)
+	
+	_update_transform()
 
-	_update_transform(aabb)
 
-
-func _update_transform(aabb=null):
+func _update_transform() -> void:
 	if _terrain_data == null:
 		_logger.debug("HTerrainCollider: terrain data not set yet")
 		return

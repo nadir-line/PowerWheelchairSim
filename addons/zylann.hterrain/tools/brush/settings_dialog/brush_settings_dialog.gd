@@ -34,11 +34,14 @@ var _load_image_index := -1
 var _logger = HT_Logger.get_for(self)
 
 
-func _ready():
+func _ready() -> void:
 	if HT_Util.is_in_edited_scene(self):
 		return
 	
 	_size_slider.set_max_value(HT_Brush.MAX_SIZE_FOR_SLIDERS)
+	_size_slider.set_min_value(HT_Brush.MIN_SIZE_FOR_SLIDERS)
+	_opacity_slider.set_max_value(HT_Brush.MAX_OPACITY_FOR_SLIDERS)
+	_opacity_slider.set_min_value(HT_Brush.MIN_OPACITY_FOR_SLIDERS)
 	_size_slider.set_greater_max_value(HT_Brush.MAX_SIZE)
 	
 	# TESTING
@@ -47,7 +50,7 @@ func _ready():
 		call_deferred("popup")
 
 
-func set_brush(brush : HT_Brush):
+func set_brush(brush : HT_Brush) -> void:
 	assert(brush != null)
 	_brush = brush
 	_update_controls_from_brush()
@@ -55,7 +58,7 @@ func set_brush(brush : HT_Brush):
 
 # `base_control` can no longer be hinted as a `Control` because in Godot 4 it could be a
 # window or dialog, which are no longer controls...
-func setup_dialogs(base_control: Node):
+func setup_dialogs(base_control: Node) -> void:
 	assert(_load_image_dialog == null)
 	_load_image_dialog = HT_EditorUtil.create_open_file_dialog()
 	_load_image_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
@@ -72,7 +75,7 @@ func setup_dialogs(base_control: Node):
 	add_child(_load_image_dialog)
 
 
-func _exit_tree():
+func _exit_tree() -> void:
 	if _load_image_dialog != null:
 		_load_image_dialog.queue_free()
 		_load_image_dialog = null
@@ -87,7 +90,7 @@ func _get_shapes_from_gui() -> Array[Texture2D]:
 	return shapes
 
 
-func _update_shapes_gui(shapes: Array[Texture2D]):
+func _update_shapes_gui(shapes: Array[Texture2D]) -> void:
 	_shape_list.clear()
 	for shape in shapes:
 		assert(shape != null)
@@ -96,13 +99,13 @@ func _update_shapes_gui(shapes: Array[Texture2D]):
 	_update_shape_list_buttons()
 
 
-func _on_AddShape_pressed():
+func _on_AddShape_pressed() -> void:
 	_load_image_index = -1
 	_load_image_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILES
 	_load_image_dialog.popup_centered_ratio(0.7)
 
 
-func _on_RemoveShape_pressed():
+func _on_RemoveShape_pressed() -> void:
 	var selected_indices := _shape_list.get_selected_items()
 	if len(selected_indices) == 0:
 		return
@@ -117,24 +120,24 @@ func _on_RemoveShape_pressed():
 	_update_shape_list_buttons()
 
 
-func _on_ShapeList_item_activated(index: int):
+func _on_ShapeList_item_activated(index: int) -> void:
 	_request_modify_shape(index)
 
 
-func _on_ChangeShape_pressed():
+func _on_ChangeShape_pressed() -> void:
 	var selected = _shape_list.get_selected_items()
 	if len(selected) == 0:
 		return
 	_request_modify_shape(selected[0])
 
 
-func _request_modify_shape(index: int):
+func _request_modify_shape(index: int) -> void:
 	_load_image_index = index
 	_load_image_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
 	_load_image_dialog.popup_centered_ratio(0.7)
 
 
-func _on_LoadImageDialog_files_selected(fpaths: PackedStringArray):
+func _on_LoadImageDialog_files_selected(fpaths: PackedStringArray) -> void:
 	var shapes := _get_shapes_from_gui()
 	
 	for fpath in fpaths:
@@ -150,7 +153,7 @@ func _on_LoadImageDialog_files_selected(fpaths: PackedStringArray):
 	_update_shapes_gui(shapes)
 
 
-func _on_LoadImageDialog_file_selected(fpath: String):
+func _on_LoadImageDialog_file_selected(fpath: String) -> void:
 	var tex := HT_Brush.load_shape_from_image_file(fpath, _logger)
 	if tex == null:
 		# Failed
@@ -171,7 +174,7 @@ func _on_LoadImageDialog_file_selected(fpath: String):
 	_update_shapes_gui(shapes)
 
 
-func _notification(what: int):
+func _notification(what: int) -> void:
 	if what == NOTIFICATION_VISIBILITY_CHANGED:
 		# Testing the scratchpad because visibility can not only change before entering the tree
 		# since Godot 4 port, it can also change between entering the tree and being _ready...
@@ -179,7 +182,7 @@ func _notification(what: int):
 			_update_controls_from_brush()
 
 
-func _update_controls_from_brush():
+func _update_controls_from_brush() -> void:
 	var brush := _brush
 	
 	if brush == null:
@@ -200,41 +203,41 @@ func _update_controls_from_brush():
 	_shape_cycling_checkbox.button_pressed = brush.is_shape_cycling_enabled()
 
 
-func _on_ClearScratchpad_pressed():
+func _on_ClearScratchpad_pressed() -> void:
 	_scratchpad.reset_image()
 
 
-func _on_Size_value_changed(value: float):
+func _on_Size_value_changed(value: float) -> void:
 	for brush in _get_brushes():
 		brush.set_size(value)
 
 
-func _on_Opacity_value_changed(value):
+func _on_Opacity_value_changed(value) -> void:
 	for brush in _get_brushes():
 		brush.set_opacity(value / 100.0)
 
 
-func _on_PressureEnabled_toggled(button_pressed):
+func _on_PressureEnabled_toggled(button_pressed: bool) -> void:
 	for brush in _get_brushes():
 		brush.set_pressure_enabled(button_pressed)
 
 
-func _on_PressureOverSize_value_changed(value):
+func _on_PressureOverSize_value_changed(value) -> void:
 	for brush in _get_brushes():
 		brush.set_pressure_over_scale(value / 100.0)
 
 
-func _on_PressureOverOpacity_value_changed(value):
+func _on_PressureOverOpacity_value_changed(value) -> void:
 	for brush in _get_brushes():
 		brush.set_pressure_over_opacity(value / 100.0)
 
 
-func _on_FrequencyDistance_value_changed(value):
+func _on_FrequencyDistance_value_changed(value) -> void:
 	for brush in _get_brushes():
 		brush.set_frequency_distance(value)
 
 
-func _on_FrequencyTime_value_changed(fps):
+func _on_FrequencyTime_value_changed(fps) -> void:
 	fps = max(1.0, fps)
 	var ms = 1000.0 / fps
 	if is_equal_approx(fps, 60.0):
@@ -243,12 +246,12 @@ func _on_FrequencyTime_value_changed(fps):
 		brush.set_frequency_time_ms(ms)
 
 
-func _on_RandomRotation_toggled(button_pressed: bool):
+func _on_RandomRotation_toggled(button_pressed: bool) -> void:
 	for brush in _get_brushes():
 		brush.set_random_rotation_enabled(button_pressed)
 
 
-func _on_shape_cycling_toggled(button_pressed: bool):
+func _on_shape_cycling_toggled(button_pressed: bool) -> void:
 	for brush in _get_brushes():
 		brush.set_shape_cycling_enabled(button_pressed)
 
@@ -262,18 +265,18 @@ func _get_brushes() -> Array[HT_Brush]:
 	return [_scratchpad.get_painter().get_brush()]
 
 
-func _on_ShapeList_item_selected(index):
+func _on_ShapeList_item_selected(index: int) -> void:
 	_update_shape_list_buttons()
 	for brush in _get_brushes():
 		brush.set_shape_index(index)
 
 
-func _update_shape_list_buttons():
+func _update_shape_list_buttons() -> void:
 	var selected_count := len(_shape_list.get_selected_items())
 	# There must be at least one shape
 	_remove_shape_button.disabled = _shape_list.get_item_count() == 1 or selected_count == 0
 	_change_shape_button.disabled = selected_count == 0
 
 
-func _on_shape_list_empty_clicked(at_position, mouse_button_index):
+func _on_shape_list_empty_clicked(_unused_at_position, _unused_mouse_button_index) -> void:
 	_update_shape_list_buttons()

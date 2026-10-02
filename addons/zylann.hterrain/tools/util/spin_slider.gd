@@ -4,7 +4,7 @@ extends Control
 const FG_MARGIN = 2
 const MAX_DECIMALS_VISUAL = 3
 
-signal value_changed(value)
+signal value_changed(value: float)
 
 
 var _value := 0.0
@@ -91,7 +91,7 @@ var _grabbing := false
 var _press_pos := Vector2()
 
 
-func _init():
+func _init() -> void:
 	custom_minimum_size = Vector2(32, 28)
 	
 	_label = Label.new()
@@ -141,11 +141,11 @@ func _init():
 	mouse_default_cursor_shape = Control.CURSOR_HSIZE
 
 
-func _ready():
+func _ready() -> void:
 	pass # Replace with function body.
 
 
-func set_centered(p_centered: bool):
+func set_centered(p_centered: bool) -> void:
 	_centered = p_centered
 	if _centered:
 		_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -162,11 +162,11 @@ func is_centered() -> bool:
 	return _centered
 
 
-func set_value_no_notify(v: float):
+func set_value_no_notify(v: float) -> void:
 	set_value(v, false, false)
 
 
-func set_value(v: float, notify_change: bool, use_slider_maximum: bool = false):
+func set_value(v: float, notify_change: bool, use_slider_maximum: bool = false) -> void:
 	if _allow_greater and not use_slider_maximum:
 		v = clampf(v, _min_value, _greater_max_value)
 	else:
@@ -181,13 +181,13 @@ func set_value(v: float, notify_change: bool, use_slider_maximum: bool = false):
 			value_changed.emit(get_value())
 
 
-func get_value():
+func get_value() -> Variant: # int|float
 	if _rounded:
 		return int(roundf(_value))
 	return _value
 
 
-func set_min_value(minv: float):
+func set_min_value(minv: float) -> void:
 	_min_value = minv
 	#queue_redraw()
 
@@ -196,7 +196,7 @@ func get_min_value() -> float:
 	return _min_value
 
 
-func set_max_value(maxv: float):
+func set_max_value(maxv: float) -> void:
 	_max_value = maxv
 	#queue_redraw()
 
@@ -213,7 +213,7 @@ func get_greater_max_value() -> float:
 	return _greater_max_value
 
 
-func set_rounded(b: bool):
+func set_rounded(b: bool) -> void:
 	_rounded = b
 	queue_redraw()
 
@@ -222,7 +222,7 @@ func is_rounded() -> bool:
 	return _rounded
 
 
-func set_prefix(p_prefix: String):
+func set_prefix(p_prefix: String) -> void:
 	_prefix = p_prefix
 	queue_redraw()
 
@@ -231,7 +231,7 @@ func get_prefix() -> String:
 	return _prefix
 
 
-func set_suffix(p_suffix: String):
+func set_suffix(p_suffix: String) -> void:
 	_suffix = p_suffix
 	queue_redraw()
 
@@ -240,7 +240,7 @@ func get_suffix() -> String:
 	return _suffix
 
 
-func set_allow_greater(allow: bool):
+func set_allow_greater(allow: bool) -> void:
 	_allow_greater = allow
 
 
@@ -248,7 +248,7 @@ func is_allowing_greater() -> bool:
 	return _allow_greater
 
 
-func _set_from_pixel(px: float):
+func _set_from_pixel(px: float) -> void:
 	var r := (px - FG_MARGIN) / (size.x - FG_MARGIN * 2.0)
 	var v := _ratio_to_value(r)
 	set_value(v, true, true)
@@ -268,27 +268,28 @@ func _value_to_ratio(v: float) -> float:
 	return (v - _min_value) / (_max_value - _min_value)
 
 
-func _on_LineEdit_gui_input(event: InputEvent):
-	if event is InputEventKey:
-		if event.pressed:
-			if event.keycode == KEY_ESCAPE:
+func _on_LineEdit_gui_input(event: InputEvent) -> void:
+	var key_event := event as InputEventKey
+	if key_event != null:
+		if key_event.pressed:
+			if key_event.keycode == KEY_ESCAPE:
 				_ignore_line_edit = true
 				_hide_line_edit()
 				grab_focus()
 				_ignore_line_edit = false
 
 
-func _on_LineEdit_focus_exited():
+func _on_LineEdit_focus_exited() -> void:
 	if _ignore_line_edit:
 		return
 	_enter_text()
 
 
-func _on_LineEdit_text_submitted(text: String):
+func _on_LineEdit_text_submitted(_unused_text: String) -> void:
 	_enter_text()
 
 
-func _enter_text():
+func _enter_text() -> void:
 	var s = _line_edit.text.strip_edges()
 	if s.is_valid_float():
 		var v := s.to_float()
@@ -298,13 +299,13 @@ func _enter_text():
 	_hide_line_edit()
 
 
-func _hide_line_edit():
+func _hide_line_edit() -> void:
 	_line_edit.hide()
 	_label.show()
 	queue_redraw()
 
 
-func _show_line_edit():
+func _show_line_edit() -> void:
 	_line_edit.show()
 	_line_edit.text = str(get_value())
 	_line_edit.select_all()
@@ -313,29 +314,33 @@ func _show_line_edit():
 	queue_redraw()
 
 
-func _gui_input(event: InputEvent):
-	if event is InputEventMouseButton:
-		if event.pressed:
-			if event.button_index == MOUSE_BUTTON_LEFT:
-				_press_pos = event.position
+func _gui_input(event: InputEvent) -> void:
+	var mb := event as InputEventMouseButton
+	if mb != null:
+		if mb.pressed:
+			if mb.button_index == MOUSE_BUTTON_LEFT:
+				_press_pos = mb.position
 				_pressing = true
 		else:
-			if event.button_index == MOUSE_BUTTON_LEFT:
+			if mb.button_index == MOUSE_BUTTON_LEFT:
 				_pressing = false
 				if _grabbing:
 					_grabbing = false
-					_set_from_pixel(event.position.x)
+					_set_from_pixel(mb.position.x)
 				else:
 					_show_line_edit()
+		return
 	
-	elif event is InputEventMouseMotion:
-		if _pressing and _press_pos.distance_to(event.position) > 2.0:
+	var mm := event as InputEventMouseMotion
+	if mm != null:
+		if _pressing and _press_pos.distance_to(mm.position) > 2.0:
 			_grabbing = true
 		if _grabbing:
-			_set_from_pixel(event.position.x)			
+			_set_from_pixel(mm.position.x)
+		return
 
 
-func _draw():
+func _draw() -> void:
 	if _line_edit.visible:
 		return
 	

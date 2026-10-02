@@ -6,16 +6,16 @@ extends AcceptDialog
 @onready var _progress_bar : ProgressBar = $VBoxContainer/ProgressBar
 
 
-func _init():
+func _init() -> void:
 	get_ok_button().hide()
 
 
-func _show_progress(message, progress):
+func _show_progress(message: String, progress: float) -> void:
 	self.title = message
 	_progress_bar.ratio = progress
 
 
-func handle_progress(info: Dictionary):
+func handle_progress(info: Dictionary) -> void:
 	if info.has("finished") and info.finished:
 		hide()
 	

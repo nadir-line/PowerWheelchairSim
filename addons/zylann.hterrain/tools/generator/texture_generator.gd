@@ -13,7 +13,7 @@ const DUMMY_TEXTURE_PATH = "res://addons/zylann.hterrain/tools/icons/empty.png"
 
 signal progress_reported(info)
 # Emitted when an output is generated.
-signal output_generated(image, metadata)
+signal output_generated(image: Image, metadata)
 # Emitted when all passes are complete
 signal completed
 
@@ -21,7 +21,7 @@ class HT_TextureGeneratorViewport:
 	var viewport : SubViewport
 	var ci : TextureRect
 
-var _passes := []
+var _passes := [] # Array[HT_TextureGeneratorPass]
 var _resolution := Vector2i(512, 512)
 var _output_padding := [0, 0, 0, 0]
 
@@ -45,7 +45,7 @@ var _shader_material : ShaderMaterial = null
 var _logger = HT_Logger.get_for(self)
 
 
-func _ready():
+func _ready() -> void:
 	_dummy_texture = load(DUMMY_TEXTURE_PATH)
 	if _dummy_texture == null:
 		_logger.error(str("Failed to load dummy texture ", DUMMY_TEXTURE_PATH))
@@ -79,19 +79,19 @@ func is_running() -> bool:
 	return _running
 
 
-func clear_passes():
+func clear_passes() -> void:
 	_passes.clear()
 
 
-func add_pass(p: HT_TextureGeneratorPass):
+func add_pass(p: HT_TextureGeneratorPass) -> void:
 	assert(_passes.find(p) == -1)
 	assert(p.iterations > 0)
 	_passes.append(p)
 
 
-func add_output(meta):
+func add_output(meta: Variant) -> void:
 	assert(len(_passes) > 0)
-	var p = _passes[-1]
+	var p : HT_TextureGeneratorPass = _passes[-1]
 	p.output = true
 	p.metadata = meta
 
@@ -100,7 +100,7 @@ func add_output(meta):
 # In tiled rendering, this is the resolution of one tile.
 # The internal viewport may be larger if some passes need more room,
 # and the resulting images might include some of these pixels if output padding is used.
-func set_resolution(res: Vector2i):
+func set_resolution(res: Vector2i) -> void:
 	assert(not _running)
 	_resolution = res
 
@@ -109,7 +109,7 @@ func set_resolution(res: Vector2i):
 # This extends the resolution of images compared to the base resolution.
 # The initial use case for this is to generate terrain tiles where edge pixels are
 # shared with the neighor tiles.
-func set_output_padding(p: Array):
+func set_output_padding(p: Array) -> void:
 	assert(typeof(p) == TYPE_ARRAY)
 	assert(len(p) == 4)
 	for v in p:
@@ -117,7 +117,7 @@ func set_output_padding(p: Array):
 	_output_padding = p
 
 
-func run():
+func run() -> void:
 	assert(len(_passes) > 0)
 	
 	if _running:
@@ -177,7 +177,7 @@ func run():
 	set_process(true)
 
 
-func _process(delta: float):
+func _process(_unused_delta: float) -> void:
 	# TODO because of https://github.com/godotengine/godot/issues/7894
 	if not is_processing():
 		return
@@ -235,7 +235,7 @@ func _process(delta: float):
 
 
 # Called at the beginning of each pass
-func _setup_pass(p: HT_TextureGeneratorPass, vp: HT_TextureGeneratorViewport):
+func _setup_pass(p: HT_TextureGeneratorPass, vp: HT_TextureGeneratorViewport) -> void:
 	if p.texture != null:
 		vp.ci.texture = p.texture
 	else:
@@ -277,13 +277,16 @@ func _setup_pass(p: HT_TextureGeneratorPass, vp: HT_TextureGeneratorViewport):
 
 
 # Called for every iteration of every pass
-func _setup_iteration(vp: HT_TextureGeneratorViewport, prev_vp: HT_TextureGeneratorViewport):
+func _setup_iteration(
+	vp: HT_TextureGeneratorViewport, 
+	prev_vp: HT_TextureGeneratorViewport
+) -> void:
 	assert(vp != prev_vp)
 	if _shader_material != null:
 		_shader_material.set_shader_parameter("u_previous_pass", prev_vp.viewport.get_texture())
 
 
-func _create_output_image(metadata, vp: HT_TextureGeneratorViewport):
+func _create_output_image(metadata, vp: HT_TextureGeneratorViewport) -> void:
 	var tex := vp.viewport.get_texture()
 	var src := tex.get_image()
 #	src.save_png(str("ddd_tgen_output", metadata.maptype, ".png"))
@@ -319,7 +322,7 @@ func _create_output_image(metadata, vp: HT_TextureGeneratorViewport):
 	output_generated.emit(dst, metadata)
 
 
-func _report_progress(passes: Array, pass_index: int, iteration: int):
+func _report_progress(passes: Array, pass_index: int, iteration: int) -> void:
 	var p = passes[pass_index]
 	progress_reported.emit({
 		"name": p.debug_name,
@@ -328,4 +331,3 @@ func _report_progress(passes: Array, pass_index: int, iteration: int):
 		"iteration": iteration,
 		"iteration_count": p.iterations
 	})
-

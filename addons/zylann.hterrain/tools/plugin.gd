@@ -9,6 +9,7 @@ const HTerrainMesher = preload("../hterrain_mesher.gd")
 const HTerrainTextureSet = preload("../hterrain_texture_set.gd")
 const HT_PreviewGenerator = preload("./preview_generator.gd")
 const HT_TerrainPainter = preload("./brush/terrain_painter.gd")
+const HT_Brush = preload("./brush/brush.gd")
 const HT_BrushDecal = preload("./brush/decal.gd")
 const HT_Util = preload("../util/util.gd")
 const HT_EditorUtil = preload("./util/editor_util.gd")
@@ -22,6 +23,8 @@ const HT_TextureSetEditor = preload("./texture_editor/set_editor/texture_set_edi
 const HT_TextureSetImportEditor = \
 	preload("./texture_editor/set_editor/texture_set_import_editor.gd")
 const HT_ProgressWindow = preload("./progress_window.gd")
+const HT_BrushEditorOverlay = preload("./brush/brush_editor_overlay.gd")
+const HT_BrushEditorOverlayScene = preload("./brush/brush_editor_overlay.tscn")
 
 const HT_EditPanelScene = preload("./panel.tscn")
 const HT_ProgressWindowScene = preload("./progress_window.tscn")
@@ -86,6 +89,9 @@ var _mouse_pressed := false
 #var _pending_paint_action = null
 var _pending_paint_commit := false
 
+var _overlay_selector : HT_BrushEditorOverlay = null
+var _editor_viewport : SubViewportContainer
+
 var _logger := HT_Logger.get_for(self)
 
 
@@ -94,7 +100,7 @@ func get_icon(icon_name: String) -> Texture2D:
 		"res://addons/zylann.hterrain/tools/icons/icon_" + icon_name + ".svg", _logger)
 
 
-func _enter_tree():
+func _enter_tree() -> void:
 	_logger.debug("HTerrain plugin Enter tree")
 	
 	var dpi_scale = get_editor_interface().get_editor_scale()
@@ -281,11 +287,15 @@ func _enter_tree():
 	_texture_set_import_editor.call_deferred("setup_dialogs", base_control)
 
 	_texture_set_editor.import_selected.connect(_on_TextureSetEditor_import_selected)
-	
 
-func _exit_tree():
+	_editor_viewport = _get_editor_viewport_container()
+
+
+func _exit_tree() -> void:
 	_logger.debug("HTerrain plugin Exit tree")
 	
+	_remove_overlay_selector()
+
 	# Make sure we release all references to edited stuff
 	_edit(null)
 
@@ -336,14 +346,14 @@ func _exit_tree():
 	remove_custom_type("HTerrainTextureSet")
 
 
-func _handles(object):
+func _handles(object: Object) -> bool:
 	return _get_terrain_from_object(object) != null
 
 
-func _edit(object):
+func _edit(object: Object) -> void:
 	_logger.debug(str("Edit ", object))
 	
-	var node = _get_terrain_from_object(object)
+	var node := _get_terrain_from_object(object)
 	
 	if _node != null:
 		_node.tree_exited.disconnect(_terrain_exited_scene)
@@ -373,7 +383,7 @@ func _edit(object):
 	_update_toolbar_menu_availability()
 
 
-static func _get_terrain_from_object(object):
+static func _get_terrain_from_object(object: Object) -> HTerrain:
 	if object != null and object is Node3D:
 		if not object.is_inside_tree():
 			return null
@@ -384,7 +394,7 @@ static func _get_terrain_from_object(object):
 	return null
 
 
-func _update_brush_buttons_availability():
+func _update_brush_buttons_availability() -> void:
 	if _node == null:
 		return
 	if _node.get_data() != null:
@@ -401,7 +411,7 @@ func _update_brush_buttons_availability():
 			button.disabled = true
 
 
-func _update_toolbar_menu_availability():
+func _update_toolbar_menu_availability() -> void:
 	var data_available := false
 	if _node != null and _node.get_data() != null:
 		data_available = true
@@ -417,7 +427,7 @@ func _update_toolbar_menu_availability():
 			popup.set_item_tooltip(i, "Terrain has no data")
 
 
-func _make_visible(visible: bool):
+func _make_visible(visible: bool) -> void:
 	_panel.set_visible(visible)
 	_toolbar.set_visible(visible)
 	_brush_decal.update_visibility()
@@ -433,7 +443,7 @@ func _make_visible(visible: bool):
 
 
 # TODO Can't hint return as `Vector2?` because it's nullable
-func _get_pointed_cell_position(mouse_position: Vector2, p_camera: Camera3D):# -> Vector2:
+func _get_pointed_cell_position(mouse_position: Vector2, p_camera: Camera3D):# -> ?Vector2:
 	# Need to do an extra conversion in case the editor viewport is in half-resolution mode
 	var viewport := p_camera.get_viewport()
 	var viewport_container : Control = viewport.get_parent()
@@ -453,10 +463,34 @@ func _forward_3d_gui_input(p_camera: Camera3D, p_event: InputEvent) -> int:
 	_node._edit_update_viewer_position(p_camera)
 	_panel.set_camera_transform(p_camera.global_transform)
 
-	var captured_event = false
+	var captured_event := false
 	
-	if p_event is InputEventMouseButton:
-		var mb = p_event
+	var key_event := p_event as InputEventKey
+	if key_event != null:
+		if key_event.keycode == KEY_G and key_event.is_echo() == false and key_event.pressed:
+			captured_event = true
+			_show_brush_editor_overlay(
+				HT_Brush.MIN_SIZE_FOR_SLIDERS,
+				HT_Brush.MAX_SIZE_FOR_SLIDERS,
+				Color.LIGHT_GREEN, _terrain_painter.get_brush_size(),
+										"Brush Size",
+			func on_value_changed(value):
+				_terrain_painter.set_brush_size(value)\
+			 )
+		elif key_event.keycode == KEY_H and key_event.is_echo() == false and key_event.pressed:
+			captured_event = true
+			_show_brush_editor_overlay(
+				HT_Brush.MIN_OPACITY_FOR_SLIDERS,
+				HT_Brush.MAX_OPACITY_FOR_SLIDERS,
+				Color.LIGHT_CORAL, _terrain_painter.get_opacity()*100,
+										"Brush Opacity",
+			func on_value_changed(value):
+				_terrain_painter.set_opacity(value/100.0)\
+			 )
+
+	var mouse_button_event := p_event as InputEventMouseButton
+	if mouse_button_event != null:
+		var mb := mouse_button_event
 		
 		if mb.button_index == MOUSE_BUTTON_LEFT or mb.button_index == MOUSE_BUTTON_RIGHT:
 			if mb.pressed == false:
@@ -464,7 +498,9 @@ func _forward_3d_gui_input(p_camera: Camera3D, p_event: InputEvent) -> int:
 
 			# Need to check modifiers before capturing the event,
 			# because they are used in navigation schemes
-			if (not mb.ctrl_pressed) and (not mb.alt_pressed) and mb.button_index == MOUSE_BUTTON_LEFT:
+			if (not mb.ctrl_pressed) \
+			and (not mb.alt_pressed) \
+			and mb.button_index == MOUSE_BUTTON_LEFT:
 				if mb.pressed:
 					# TODO Allow to paint on click
 					# TODO `pressure` is not available in button press events
@@ -491,15 +527,16 @@ func _forward_3d_gui_input(p_camera: Camera3D, p_event: InputEvent) -> int:
 					_logger.debug("Picking height {0}".format([h]))
 					_terrain_painter.set_flatten_height(h)
 
-	elif p_event is InputEventMouseMotion:
-		var mm = p_event
+	var mouse_motion_event := p_event as InputEventMouseMotion
+	if mouse_motion_event != null:
+		var mm := mouse_motion_event
 		var hit_pos_in_cells = _get_pointed_cell_position(mm.position, p_camera)
 		if hit_pos_in_cells != null:
 			_brush_decal.set_position(Vector3(hit_pos_in_cells.x, 0, hit_pos_in_cells.y))
 			
 			if _mouse_pressed:
 				if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-					_terrain_painter.paint_input(hit_pos_in_cells, mm.pressure)
+					_terrain_painter.paint_input(hit_pos_in_cells, mm.pressure, mm.shift_pressed)
 					captured_event = true
 
 		# This is in case the data or textures change as the user edits the terrain,
@@ -511,11 +548,11 @@ func _forward_3d_gui_input(p_camera: Camera3D, p_event: InputEvent) -> int:
 	return AFTER_GUI_INPUT_PASS
 
 
-func _process(delta: float):
+func _process(delta: float) -> void:
 	if _node == null:
 		return
 
-	var has_data = (_node.get_data() != null)
+	var has_data := (_node.get_data() != null)
 	
 	if _pending_paint_commit:
 		if has_data:
@@ -534,10 +571,10 @@ func _process(delta: float):
 		_update_toolbar_menu_availability()
 
 
-func _paint_completed(changes: Dictionary):
-	var time_before = Time.get_ticks_msec()
+func _paint_completed(changes: Dictionary) -> void:
+	var time_before := Time.get_ticks_msec()
 
-	var heightmap_data = _node.get_data()
+	var heightmap_data := _node.get_data()
 	assert(heightmap_data != null)
 	
 	var chunk_positions : Array = changes.chunk_positions
@@ -620,12 +657,12 @@ func _paint_completed(changes: Dictionary):
 	_logger.debug(str(action_name, " | ", len(chunk_positions), " chunks | ", time_spent, " ms"))
 
 
-func _terrain_exited_scene():
+func _terrain_exited_scene() -> void:
 	_logger.debug("HTerrain exited the scene")
 	_edit(null)
 
 
-func _menu_item_selected(id: int):
+func _menu_item_selected(id: int) -> void:
 	_logger.debug(str("Menu item selected ", id))
 	
 	match id:
@@ -681,7 +718,7 @@ func _menu_item_selected(id: int):
 			_about_dialog.popup_centered()
 
 
-func _on_lookdev_menu_about_to_show():
+func _on_lookdev_menu_about_to_show() -> void:
 	_lookdev_menu.clear()
 	_lookdev_menu.add_check_item("Disabled")
 	_lookdev_menu.set_item_checked(0, not _node.is_lookdev_enabled())
@@ -703,7 +740,7 @@ func _on_lookdev_menu_about_to_show():
 				})
 
 
-func _on_lookdev_menu_id_pressed(id: int):
+func _on_lookdev_menu_id_pressed(id: int) -> void:
 	var meta = _lookdev_menu.get_item_metadata(id)
 	if meta == null:
 		_node.set_lookdev_enabled(false)
@@ -715,35 +752,35 @@ func _on_lookdev_menu_id_pressed(id: int):
 	_lookdev_menu.set_item_checked(0, not _node.is_lookdev_enabled())
 
 
-func _on_mode_selected(mode: int):
+func _on_mode_selected(mode: int) -> void:
 	_logger.debug(str("On mode selected ", mode))
 	_terrain_painter.set_mode(mode)
 	_panel.set_brush_editor_display_mode(mode)
 
 
-func _on_texture_selected(index: int):
+func _on_texture_selected(index: int) -> void:
 	# Switch to texture paint mode when a texture is selected
 	_select_brush_mode(HT_TerrainPainter.MODE_SPLAT)
 	_terrain_painter.set_texture_index(index)
 
 
-func _on_detail_selected(index: int):
+func _on_detail_selected(index: int) -> void:
 	# Switch to detail paint mode when a detail item is selected
 	_select_brush_mode(HT_TerrainPainter.MODE_DETAIL)
 	_terrain_painter.set_detail_index(index)
 
 
-func _select_brush_mode(mode: int):
+func _select_brush_mode(mode: int) -> void:
 	_toolbar_brush_buttons[mode].button_pressed = true
 	_on_mode_selected(mode)
 
 
-static func get_size_from_raw_length(flen: int):
+static func get_size_from_raw_length(flen: int) -> int:
 	var side_len = roundf(sqrt(float(flen/2)))
 	return int(side_len)
 
 
-func _on_GenerateMeshDialog_generate_selected(lod: int):
+func _on_GenerateMeshDialog_generate_selected(lod: int) -> void:
 	var data := _node.get_data()
 	if data == null:
 		_logger.error("Terrain has no data, cannot generate mesh")
@@ -760,7 +797,7 @@ func _on_GenerateMeshDialog_generate_selected(lod: int):
 
 
 # TODO Workaround for https://github.com/Zylann/godot_heightmap_plugin/issues/101
-func _on_permanent_change_performed(message: String):
+func _on_permanent_change_performed(message: String) -> void:
 	var data := _node.get_data()
 	if data == null:
 		_logger.error("Terrain has no data, cannot mark it as changed")
@@ -772,26 +809,26 @@ func _on_permanent_change_performed(message: String):
 	ur.commit_action()
 
 
-func _on_brush_size_changed(size):
+func _on_brush_size_changed(size) -> void:
 	_brush_decal.set_size(size)
 
 
-func _on_Panel_edit_texture_pressed(index: int):
+func _on_Panel_edit_texture_pressed(index: int) -> void:
 	var ts := _node.get_texture_set()
 	_texture_set_editor.set_texture_set(ts)
 	_texture_set_editor.select_slot(index)
 	_texture_set_editor.popup_centered()
 
 
-func _on_TextureSetEditor_import_selected():
+func _on_TextureSetEditor_import_selected() -> void:
 	_open_texture_set_import_editor()
 
 
-func _on_Panel_import_textures_pressed():
+func _on_Panel_import_textures_pressed() -> void:
 	_open_texture_set_import_editor()
 
 
-func _open_texture_set_import_editor():
+func _open_texture_set_import_editor() -> void:
 	var ts := _node.get_texture_set()
 	_texture_set_import_editor.set_texture_set(ts)
 	_texture_set_import_editor.popup_centered()
@@ -806,7 +843,7 @@ func _open_texture_set_import_editor():
 #		_debug_spawn_collider_indicators()
 
 
-func _debug_spawn_collider_indicators():
+func _debug_spawn_collider_indicators() -> void:
 	var root = get_editor_interface().get_edited_scene_root()
 	var terrain := HT_Util.find_first_node(root, HTerrain) as HTerrain
 	if terrain == null:
@@ -852,7 +889,61 @@ func _debug_spawn_collider_indicators():
 				mi.position = hit.position
 
 
-func _spawn_vertical_bound_boxes():
+func _show_brush_editor_overlay(
+	min_size: float, 
+	max_size: float, 
+	widget_color: Color,
+	initial_value: float, 
+	action_name: String,
+	on_value_selected: Callable
+) -> void:
+	_remove_overlay_selector()
+
+	if _editor_viewport == null:
+		# something went wrong
+		return
+
+	var selector: HT_BrushEditorOverlay = HT_BrushEditorOverlayScene.instantiate()
+	EditorInterface.get_base_control().add_child(selector)
+
+	selector.min_value = min_size
+	selector.max_value = max_size
+	selector.set_overlay_name(action_name)
+	selector.set_brush_preview_color(widget_color)
+	selector.apply_dpi_scale(get_editor_interface().get_editor_scale())
+	selector.setup_start_position(_editor_viewport.get_global_mouse_position(), initial_value)
+
+	_overlay_selector = selector
+
+	selector.on_value_selected.connect(func f(value):
+		on_value_selected.call(value)
+		_remove_overlay_selector()
+	)
+	selector.on_cancel.connect(func f():
+		_remove_overlay_selector()
+	)
+
+
+func _remove_overlay_selector() -> void:
+	if _overlay_selector != null:
+		_overlay_selector.queue_free()
+		_overlay_selector = null
+
+
+func _get_editor_viewport_container() -> SubViewportContainer:
+	# Returns the Node3DEditorViewportContainer
+	var viewport_container: Control = \
+		EditorInterface.get_editor_viewport_3d().get_parent().get_parent()
+	var editor_viewport_container: Array[Node] = \
+		viewport_container.find_children("*", "SubViewportContainer", false, false)
+
+	if editor_viewport_container.is_empty():
+		return null
+
+	return editor_viewport_container[0]
+
+
+func _spawn_vertical_bound_boxes() -> void:
 	var data := _node.get_data()
 #	var sy = data._chunked_vertical_bounds_size_y
 #	var sx = data._chunked_vertical_bounds_size_x

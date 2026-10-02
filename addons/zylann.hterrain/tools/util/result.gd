@@ -12,14 +12,14 @@ var message := ""
 var inner_result = null
 
 
-func _init(p_success: bool, p_message := "", p_inner = null):
+func _init(p_success: bool, p_message := "", p_inner = null) -> void:
 	success = p_success
 	message = p_message
 	inner_result = p_inner
 
 
 # TODO Can't type-hint self return
-func with_value(v):
+func with_value(v: Variant): # HT_Result
 	value = v
 	return self
 

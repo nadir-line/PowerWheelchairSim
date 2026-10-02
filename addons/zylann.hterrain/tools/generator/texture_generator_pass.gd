@@ -21,14 +21,15 @@ var iterations := 1
 # If not empty, the viewport will be downloaded as an image before the next pass
 var output := false
 # Sent along the output
-var metadata = null
+var metadata : Variant = null
 # Used for tiled rendering, where each tile has the base resolution,
 # in case the viewport cannot be made big enough to cover the final image,
 # of if you are generating a pseudo-infinite terrain.
 # TODO Have an API for this?
 var tile_pos := Vector2()
 
-func duplicate():
+# TODO Can't type self, may need to use class_name
+func duplicate(): # -> HT_TextureGeneratorPass
 	var p = get_script().new()
 	p.debug_name = debug_name
 	p.clear = clear

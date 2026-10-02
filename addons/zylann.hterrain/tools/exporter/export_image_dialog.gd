@@ -10,10 +10,11 @@ const HT_Logger = preload("../../util/logger.gd")
 const FORMAT_RH = 0
 const FORMAT_RF = 1
 const FORMAT_R16 = 2
-const FORMAT_PNG8 = 3
-const FORMAT_EXRH = 4
-const FORMAT_EXRF = 5
-const FORMAT_COUNT = 6
+const FORMAT_R32 = 3
+const FORMAT_PNG8 = 4
+const FORMAT_EXRH = 5
+const FORMAT_EXRF = 6
+const FORMAT_COUNT = 7
 
 @onready var _output_path_line_edit := $VB/Grid/OutputPath/HeightmapPathLineEdit as LineEdit
 @onready var _format_selector := $VB/Grid/FormatSelector as OptionButton
@@ -29,19 +30,20 @@ var _format_extensions := []
 var _logger = HT_Logger.get_for(self)
 
 
-func _init():
+func _init() -> void:
 	# Godot 4 decided to not have a plain WindowDialog class...
 	# there is Window but it's way too unfriendly...
 	get_ok_button().hide()
 
 
-func _ready():
+func _ready() -> void:
 	_format_names.resize(FORMAT_COUNT)
 	_format_extensions.resize(FORMAT_COUNT)
 	
 	_format_names[FORMAT_RH] = "16-bit RAW float"
 	_format_names[FORMAT_RF] = "32-bit RAW float"
-	_format_names[FORMAT_R16] = "16-bit RAW unsigned"
+	_format_names[FORMAT_R16] = "16-bit RAW int unsigned (little endian)"
+	_format_names[FORMAT_R32] = "32-bit RAW int unsigned (little endian)"
 	_format_names[FORMAT_PNG8] = "8-bit PNG greyscale"
 	_format_names[FORMAT_EXRH] = "16-bit float greyscale EXR"
 	_format_names[FORMAT_EXRF] = "32-bit float greyscale EXR"
@@ -49,6 +51,7 @@ func _ready():
 	_format_extensions[FORMAT_RH] = "raw"
 	_format_extensions[FORMAT_RF] = "raw"
 	_format_extensions[FORMAT_R16] = "raw"
+	_format_extensions[FORMAT_R32] = "raw"
 	_format_extensions[FORMAT_PNG8] = "png"
 	_format_extensions[FORMAT_EXRH] = "exr"
 	_format_extensions[FORMAT_EXRF] = "exr"
@@ -58,7 +61,7 @@ func _ready():
 			_format_selector.get_popup().add_item(_format_names[i], i)
 
 
-func setup_dialogs(base_control: Control):
+func setup_dialogs(base_control: Control) -> void:
 	assert(_file_dialog == null)
 	var fd := EditorFileDialog.new()
 	fd.file_mode = EditorFileDialog.FILE_MODE_SAVE_FILE
@@ -71,21 +74,21 @@ func setup_dialogs(base_control: Control):
 	_update_file_extension()
 
 
-func set_terrain(terrain: HTerrain):
+func set_terrain(terrain: HTerrain) -> void:
 	_terrain = terrain
 
 
-func _exit_tree():
+func _exit_tree() -> void:
 	if _file_dialog != null:
 		_file_dialog.queue_free()
 		_file_dialog = null
 
 
-func _on_FileDialog_file_selected(fpath: String):
+func _on_FileDialog_file_selected(fpath: String) -> void:
 	_output_path_line_edit.text = fpath
 
 
-func _auto_adjust_height_range():
+func _auto_adjust_height_range() -> void:
 	assert(_terrain != null)
 	assert(_terrain.get_data() != null)
 	var aabb := _terrain.get_data().get_aabb()
@@ -120,7 +123,10 @@ func _export() -> bool:
 	if format == FORMAT_PNG8:
 		var hscale := 1.0 / (height_max - height_min)
 		var im := Image.create(
-			src_heightmap.get_width(), src_heightmap.get_height(), false, Image.FORMAT_R8)
+			src_heightmap.get_width(), src_heightmap.get_height(), false, 
+			# Using L8 because when using R8 Godot saves as 24-bit per pixel (RGB8) 
+			# which is wasteful
+			Image.FORMAT_L8)
 		
 		for y in src_heightmap.get_height():
 			for x in src_heightmap.get_width():
@@ -142,7 +148,7 @@ func _export() -> bool:
 			var err := FileAccess.get_open_error()
 			_print_file_error(fpath, err)
 			return false
-		
+
 		if format == FORMAT_RH:
 			float_heightmap.convert(Image.FORMAT_RH)
 			f.store_buffer(float_heightmap.get_data())
@@ -155,14 +161,15 @@ func _export() -> bool:
 			for y in float_heightmap.get_height():
 				for x in float_heightmap.get_width():
 					var h := int((float_heightmap.get_pixel(x, y).r - height_min) * hscale)
-					if h < 0:
-						h = 0
-					elif h > 65535:
-						h = 65535
-					if x % 50 == 0:
-						_logger.debug(str(h))
-					f.store_16(h)
-	
+					f.store_16(clampi(h, 0, 65535))
+
+		elif format == FORMAT_R32:
+			var hscale := 4294967295.0 / (height_max - height_min)
+			for y in float_heightmap.get_height():
+				for x in float_heightmap.get_width():
+					var h := int((float_heightmap.get_pixel(x, y).r - height_min) * hscale)
+					f.store_32(clampi(h, 0, 4294967295))
+
 	if save_error == OK:
 		_logger.debug("Exported heightmap as \"{0}\"".format([fpath]))
 		return true
@@ -171,7 +178,7 @@ func _export() -> bool:
 		return false
 
 
-func _update_file_extension():
+func _update_file_extension() -> void:
 	if _format_selector.selected == -1:
 		_format_selector.selected = 0
 		# This recursively calls the current function
@@ -189,33 +196,33 @@ func _update_file_extension():
 		_output_path_line_edit.text = str(fpath.get_basename(), ".", ext)
 
 
-func _print_file_error(fpath: String, err: int):
+func _print_file_error(fpath: String, err: int) -> void:
 	_logger.error("Could not save path {0}, error: {1}" \
 		.format([fpath, HT_Errors.get_message(err)]))
 
 
-func _on_CancelButton_pressed():
+func _on_CancelButton_pressed() -> void:
 	hide()
 
 
-func _on_ExportButton_pressed():
+func _on_ExportButton_pressed() -> void:
 	if _export():
 		hide()
 	if _show_in_explorer_checkbox.button_pressed:
 		OS.shell_open(_output_path_line_edit.text.strip_edges().get_base_dir())
 
 
-func _on_HeightmapPathLineEdit_text_changed(new_text: String):
+func _on_HeightmapPathLineEdit_text_changed(new_text: String) -> void:
 	_export_button.disabled = (new_text.strip_edges() == "")
 
 
-func _on_HeightmapPathBrowseButton_pressed():
+func _on_HeightmapPathBrowseButton_pressed() -> void:
 	_file_dialog.popup_centered_ratio()
 
 
-func _on_FormatSelector_item_selected(id):
+func _on_FormatSelector_item_selected(_unused_id: int) -> void:
 	_update_file_extension()
 
 
-func _on_HeightRangeAutoButton_pressed():
+func _on_HeightRangeAutoButton_pressed() -> void:
 	_auto_adjust_height_range()

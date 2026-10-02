@@ -2,7 +2,7 @@ shader_type spatial;
 
 // This is a very simple shader for a low-poly coloured visual, without textures
 
-#include "include/heightmap.gdshaderinc"
+#include "res://addons/zylann.hterrain/shaders/include/heightmap.gdshaderinc"
 
 uniform sampler2D u_terrain_heightmap;
 uniform sampler2D u_terrain_normalmap;
@@ -11,6 +11,8 @@ uniform sampler2D u_terrain_normalmap;
 uniform sampler2D u_terrain_colormap;// : hint_albedo;
 uniform mat4 u_terrain_inverse_transform;
 uniform mat3 u_terrain_normal_basis;
+
+uniform float u_specular = 0.5;
 
 varying flat vec4 v_tint;
 
@@ -31,17 +33,17 @@ void vertex() {
 
 	// Normalized UV
 	UV = cell_coords / vec2(textureSize(u_terrain_heightmap, 0));
-	
+
 	// Height displacement
 	float h = sample_heightmap(u_terrain_heightmap, UV);
 	VERTEX.y = h;
-	
+
 	// Putting this in vertex saves 2 fetches from the fragment shader,
 	// which is good for performance at a negligible quality cost,
 	// provided that geometry is a regular grid that decimates with LOD.
 	// (downside is LOD will also decimate tint and splat, but it's not bad overall)
 	v_tint = texture(u_terrain_colormap, UV);
-	
+
 	// Need to use u_terrain_normal_basis to handle scaling.
 	NORMAL = u_terrain_normal_basis * unpack_normal(texture(u_terrain_normalmap, UV));
 }
@@ -51,13 +53,13 @@ void fragment() {
 		// TODO Add option to use vertex discarding instead, using NaNs
 		discard;
 	}
-	
-	vec3 terrain_normal_world = 
+
+	vec3 terrain_normal_world =
 		u_terrain_normal_basis * unpack_normal(texture(u_terrain_normalmap, UV));
 	terrain_normal_world = normalize(terrain_normal_world);
-	
+
 	ALBEDO = v_tint.rgb;
 	ROUGHNESS = 1.0;
 	NORMAL = normalize(cross(dFdy(VERTEX), dFdx(VERTEX)));
+	SPECULAR = u_specular;
 }
-

@@ -24,7 +24,7 @@ var _empty_icon : Texture2D
 var _logger = HT_Logger.get_for(self)
 
 
-func _ready():
+func _ready() -> void:
 	_empty_icon = load(EMPTY_ICON_TEXTURE_PATH)
 	if _empty_icon == null:
 		_logger.error(str("Failed to load empty icon ", EMPTY_ICON_TEXTURE_PATH))
@@ -35,7 +35,7 @@ func _ready():
 		_textures_list.add_item(str(i), _empty_icon)
 
 
-func set_terrain(terrain: HTerrain):
+func set_terrain(terrain: HTerrain) -> void:
 	_terrain = terrain
 
 
@@ -46,7 +46,7 @@ static func _get_slot_count(terrain: HTerrain) -> int:
 	return texture_set.get_slots_count()
 
 
-func _process(delta: float):
+func _process(_unused_delta: float) -> void:
 	var texture_set = null
 	if _terrain != null:
 		texture_set = _terrain.get_texture_set()
@@ -67,11 +67,11 @@ func _process(delta: float):
 		_texture_list_need_update = false
 
 
-func _on_texture_set_changed():
+func _on_texture_set_changed() -> void:
 	_texture_list_need_update = true
 
 
-func _update_texture_list():
+func _update_texture_list() -> void:
 	_textures_list.clear()
 
 	if _terrain == null:
@@ -102,7 +102,7 @@ func _update_texture_list():
 				_textures_list.add_item(hint, texture_array, slot_index)
 
 
-func _set_buttons_active(active: bool):
+func _set_buttons_active(active: bool) -> void:
 	for i in _buttons_container.get_child_count():
 		var child = _buttons_container.get_child(i)
 		if child is Button:
@@ -115,20 +115,20 @@ static func _get_slot_hint_name(i: int, stype: String) -> String:
 	return str(i)
 
 
-func _on_TextureList_item_selected(index: int):
+func _on_TextureList_item_selected(index: int) -> void:
 	texture_selected.emit(index)
 
 
-func _on_TextureList_item_activated(index: int):
+func _on_TextureList_item_activated(index: int) -> void:
 	edit_pressed.emit(index)
 
 
-func _on_EditButton_pressed():
+func _on_EditButton_pressed() -> void:
 	var selected_slot := _textures_list.get_selected_item()
 	if selected_slot == -1:
 		selected_slot = 0
 	edit_pressed.emit(selected_slot)
 
 
-func _on_ImportButton_pressed():
+func _on_ImportButton_pressed() -> void:
 	import_pressed.emit()

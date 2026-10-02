@@ -2,7 +2,7 @@
 extends EditorFileDialog
 
 
-func _init():
+func _init() -> void:
 	#access = EditorFileDialog.ACCESS_RESOURCES
 	file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
 	# TODO I actually want a dialog to load a texture, not specifically a PNG...
@@ -13,10 +13,9 @@ func _init():
 	close_requested.connect(call_deferred.bind("_on_close"))
 
 
-func _on_close():
+func _on_close() -> void:
 	# Disconnect listeners automatically,
 	# so we can re-use the same dialog with different listeners
-	var cons = get_signal_connection_list("file_selected")
+	var cons := get_signal_connection_list("file_selected")
 	for con in cons:
 		file_selected.disconnect(con.callable)
-

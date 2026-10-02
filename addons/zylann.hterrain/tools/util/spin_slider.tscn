@@ -1,15 +1,13 @@
-[gd_scene format=3 uid="uid://ij1alofmg2j7"]
+[gd_scene load_steps=2 format=2]
 
-[ext_resource type="Script" uid="uid://bye877u6220cs" path="res://addons/zylann.hterrain/tools/util/spin_slider.gd" id="1"]
+[ext_resource path="res://addons/zylann.hterrain/tools/util/spin_slider.gd" type="Script" id=1]
 
-[node name="SpinSlider" type="Control" unique_id=108374877]
-custom_minimum_size = Vector2(32, 28)
-layout_mode = 3
-anchors_preset = 15
+[node name="SpinSlider" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+rect_min_size = Vector2( 32, 28 )
 mouse_default_cursor_shape = 10
-script = ExtResource("1")
-max_value = 100.0
-centered = true
-greater_max_value = 10000.0
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}

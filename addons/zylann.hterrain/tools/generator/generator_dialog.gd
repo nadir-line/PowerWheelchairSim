@@ -46,7 +46,7 @@ static func get_shader(shader_name: String) -> Shader:
 	return load(path) as Shader
 
 
-func _init():
+func _init() -> void:
 	# Godot 4 does not have a plain WindowDialog class... there is Window but it's too unfriendly...
 	get_ok_button().hide()
 	
@@ -54,7 +54,7 @@ func _init():
 	add_child(_progress_window)
 
 
-func _ready():
+func _ready() -> void:
 	_inspector.set_prototype({
 		"seed": {
 			"type": TYPE_INT, 
@@ -173,17 +173,17 @@ func _ready():
 		call_deferred("popup_centered")
 
 
-func apply_dpi_scale(dpi_scale: float):
+func apply_dpi_scale(dpi_scale: float) -> void:
 	min_size *= dpi_scale
 	_inspector_container.custom_minimum_size *= dpi_scale
 
 
-func set_terrain(terrain: HTerrain):
+func set_terrain(terrain: HTerrain) -> void:
 	_terrain = terrain
 	_adjust_viewport_resolution()
 
 
-func _adjust_viewport_resolution():
+func _adjust_viewport_resolution() -> void:
 	if _terrain == null:
 		return
 	var data = _terrain.get_data()
@@ -201,15 +201,15 @@ func _adjust_viewport_resolution():
 	_viewport_resolution = vp_res
 
 
-func set_image_cache(image_cache: HT_ImageFileCache):
+func set_image_cache(image_cache: HT_ImageFileCache) -> void:
 	_image_cache = image_cache
 
 
-func set_undo_redo(ur: EditorUndoRedoManager):
+func set_undo_redo(ur: EditorUndoRedoManager) -> void:
 	_undo_redo_manager = ur
 
 
-func _notification(what: int):
+func _notification(what: int) -> void:
 	match what:
 		NOTIFICATION_VISIBILITY_CHANGED:
 			# We don't want any of this to run in an edited scene
@@ -241,7 +241,7 @@ func _notification(what: int):
 				_dialog_visible = false
 
 
-func _update_generator(preview: bool):
+func _update_generator(preview: bool) -> void:
 	var scale : float = _inspector.get_value("scale")
 	# Scale is inverted in the shader
 	if absf(scale) < 0.01:
@@ -376,11 +376,11 @@ func _update_generator(preview: bool):
 	_generator.run()
 
 
-func _on_CancelButton_pressed():
+func _on_CancelButton_pressed() -> void:
 	hide()
 
 
-func _on_ApplyButton_pressed():
+func _on_ApplyButton_pressed() -> void:
 	# We used to hide the dialog when the Apply button is clicked, and then texture generation took
 	# place in an offscreen viewport in multiple tiled stages, with a progress window being shown.
 	# But in Godot 4, it turns out SubViewports never update if they are child of a hidden Window,
@@ -390,7 +390,7 @@ func _on_ApplyButton_pressed():
 	_apply()
 
 
-func _on_Inspector_property_changed(key, value):
+func _on_Inspector_property_changed(key: String, value: Variant) -> void:
 	match key:
 		"show_sea":
 			_preview.set_sea_visible(value)
@@ -400,14 +400,14 @@ func _on_Inspector_property_changed(key, value):
 			_update_generator(true)
 
 
-func _on_TerrainPreview_dragged(relative: Vector2, button_mask: int):
+func _on_TerrainPreview_dragged(relative: Vector2, button_mask: int) -> void:
 	if button_mask & MOUSE_BUTTON_MASK_LEFT:
 		var offset : Vector2 = _inspector.get_value("offset")
 		offset += relative
 		_inspector.set_value("offset", offset)
 
 
-func _apply():
+func _apply() -> void:
 	if _terrain == null:
 		_logger.error("cannot apply, terrain is null")
 		return
@@ -435,7 +435,7 @@ func _apply():
 	_update_generator(false)
 
 
-func _on_TextureGenerator_progress_reported(info: Dictionary):
+func _on_TextureGenerator_progress_reported(info: Dictionary) -> void:
 	if _applying:
 		return
 	var p := 0.0
@@ -445,7 +445,7 @@ func _on_TextureGenerator_progress_reported(info: Dictionary):
 	_progress_bar.ratio = p
 
 
-func _on_TextureGenerator_output_generated(image: Image, info: Dictionary):
+func _on_TextureGenerator_output_generated(image: Image, info: Dictionary) -> void:
 	# TODO We should check the terrain's image format,
 	# but that would prevent from testing in isolation...
 	if info.maptype == HTerrainData.CHANNEL_HEIGHT:
@@ -507,7 +507,7 @@ func _on_TextureGenerator_output_generated(image: Image, info: Dictionary):
 #			image.save_png(str("normal_sector_", info.sector.x, "_", info.sector.y, ".png"))
 
 
-func _on_TextureGenerator_completed():
+func _on_TextureGenerator_completed() -> void:
 	_progress_bar.hide()
 
 	if not _applying:
@@ -540,11 +540,11 @@ func _on_TextureGenerator_completed():
 	hide()
 
 
-func _notify_progress(info: Dictionary):
+func _notify_progress(info: Dictionary) -> void:
 	_progress_window.handle_progress(info)
 
 
-func _process(delta):
+func _process(_unused_delta: float) -> void:
 	if _applying:
 		# HACK to workaround a peculiar behavior of Viewports in Godot 4.
 		# Apparently Godot 4 will not update Viewports set to UPDATE_ALWAYS when the editor decides

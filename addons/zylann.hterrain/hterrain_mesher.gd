@@ -16,7 +16,7 @@ var _chunk_size_x := 16
 var _chunk_size_y := 16
 
 
-func configure(chunk_size_x: int, chunk_size_y: int, lod_count: int):
+func configure(chunk_size_x: int, chunk_size_y: int, lod_count: int) -> void:
 	assert(typeof(chunk_size_x) == TYPE_INT)
 	assert(typeof(chunk_size_y) == TYPE_INT)
 	assert(typeof(lod_count) == TYPE_INT)

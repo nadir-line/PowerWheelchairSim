@@ -16,18 +16,21 @@ signal permanent_change_performed(message)
 @onready var _warnings_label : Label = \
 	$VBoxContainer/ColorRect/ScrollContainer/VBoxContainer/Warnings
 
-const RAW_LITTLE_ENDIAN = 0
-const RAW_BIG_ENDIAN = 1
+
+enum {
+	RAW_LITTLE_ENDIAN,
+	RAW_BIG_ENDIAN
+}
 
 var _terrain : HTerrain = null
 var _logger = HT_Logger.get_for(self)
 
 
-func _init():
+func _init() -> void:
 	get_ok_button().hide()
 
 
-func _ready():
+func _ready() -> void:
 	_inspector.set_prototype({
 		"heightmap": {
 			"type": TYPE_STRING,
@@ -37,7 +40,13 @@ func _ready():
 		"raw_endianess": {
 			"type": TYPE_INT,
 			"usage": "enum",
-			"enum_items": ["Little Endian", "Big Endian"],
+			"enum_items": [[RAW_LITTLE_ENDIAN, "Little Endian"], [RAW_BIG_ENDIAN, "Big Endian"]],
+			"enabled": false
+		},
+		"bit_depth": {
+			"type": TYPE_INT,
+			"usage": "enum",
+			"enum_items": [[HTerrainData.BIT_DEPTH_16, "16-bit"], [HTerrainData.BIT_DEPTH_32, "32-bit"]],
 			"enabled": false
 		},
 		"min_height": {
@@ -61,17 +70,17 @@ func _ready():
 			"exts": ["png"]
 		}
 	})
-	
+
 	# Testing
 #	_errors_label.text = "- Hello World!"
 #	_warnings_label.text = "- Yolo Jesus!"
 
 
-func set_terrain(terrain: HTerrain):
+func set_terrain(terrain: HTerrain) -> void:
 	_terrain = terrain
 
 
-func _notification(what: int):
+func _notification(what: int) -> void:
 	if what == NOTIFICATION_VISIBILITY_CHANGED:
 		# Checking a node set in _ready,
 		# because visibility can also change between _enter_tree and _ready...
@@ -79,14 +88,14 @@ func _notification(what: int):
 			_clear_feedback()
 
 
-static func _format_feedbacks(feed):
+static func _format_feedbacks(feed) -> String:
 	var a := []
 	for s in feed:
 		a.append("- " + s)
 	return "\n".join(PackedStringArray(a))
 
 
-func _clear_feedback():
+func _clear_feedback() -> void:
 	_errors_label.text = ""
 	_warnings_label.text = ""
 
@@ -96,7 +105,7 @@ class HT_ErrorCheckReport:
 	var warnings := []
 
 
-func _show_feedback(res: HT_ErrorCheckReport):
+func _show_feedback(res: HT_ErrorCheckReport) -> void:
 	for e in res.errors:
 		_logger.error(e)
 
@@ -112,12 +121,12 @@ func _show_feedback(res: HT_ErrorCheckReport):
 		_warnings_label.text = _format_feedbacks(res.warnings)
 
 
-func _on_CheckButton_pressed():
+func _on_CheckButton_pressed() -> void:
 	var res := _validate_form()
 	_show_feedback(res)
 
 
-func _on_ImportButton_pressed():
+func _on_ImportButton_pressed() -> void:
 	assert(_terrain != null and _terrain.get_data() != null)
 
 	# Verify input to inform the user of potential issues
@@ -137,7 +146,8 @@ func _on_ImportButton_pressed():
 			"path": heightmap_path,
 			"min_height": _inspector.get_value("min_height"),
 			"max_height": _inspector.get_value("max_height"),
-			"big_endian": endianess == RAW_BIG_ENDIAN
+			"big_endian": endianess == RAW_BIG_ENDIAN,
+			"bit_depth": _inspector.get_value("bit_depth"),
 		}
 
 	var colormap_path = _inspector.get_value("colormap")
@@ -160,14 +170,39 @@ func _on_ImportButton_pressed():
 	hide()
 
 
-func _on_CancelButton_pressed():
+func _on_CancelButton_pressed() -> void:
 	hide()
 
 
-func _on_Inspector_property_changed(key: String, value):
+func _on_Inspector_property_changed(key: String, value: Variant) -> void:
 	if key == "heightmap":
 		var is_raw = value.get_extension().to_lower() == "raw"
 		_inspector.set_property_enabled("raw_endianess", is_raw)
+		_inspector.set_property_enabled("bit_depth", is_raw)
+		if is_raw:
+			var bit_depth:int = _estimate_bit_depth_for_raw_file(value)
+			if bit_depth == HTerrainData.BIT_DEPTH_UNDEFINED:
+				bit_depth = HTerrainData.BIT_DEPTH_16 # fallback depth value
+			_inspector.set_value("bit_depth", bit_depth)
+
+
+# _estimate_bit_depth_for_raw_file returns the file's identified bit depth, or 0.
+static func _estimate_bit_depth_for_raw_file(path: String) -> int:
+	var ext := path.get_extension().to_lower()
+	if ext == "raw":
+		var f := FileAccess.open(path, FileAccess.READ)
+		if f == null:
+			return HTerrainData.BIT_DEPTH_UNDEFINED
+
+		var file_len := f.get_length()
+		f = null # close file
+
+		for bit_depth in [HTerrainData.BIT_DEPTH_16, HTerrainData.BIT_DEPTH_32]:
+			var file_res := HT_Util.integer_square_root(file_len / (bit_depth/8))
+			if file_res > 0:
+				return bit_depth
+
+	return HTerrainData.BIT_DEPTH_UNDEFINED
 
 
 func _validate_form() -> HT_ErrorCheckReport:
@@ -176,6 +211,7 @@ func _validate_form() -> HT_ErrorCheckReport:
 	var heightmap_path : String = _inspector.get_value("heightmap")
 	var splatmap_path : String = _inspector.get_value("splatmap")
 	var colormap_path : String = _inspector.get_value("colormap")
+	var bit_depth = _inspector.get_value("bit_depth")
 
 	if colormap_path == "" and heightmap_path == "" and splatmap_path == "":
 		res.errors.append("No maps specified.")
@@ -195,7 +231,7 @@ func _validate_form() -> HT_ErrorCheckReport:
 			# so we avoid loading other maps every time to do further checks.
 			return res
 
-		var image_size_result = _load_image_size(heightmap_path, _logger)
+		var image_size_result = _load_image_size(heightmap_path, _logger, bit_depth)
 		if image_size_result.error_code != OK:
 			res.errors.append(str("Cannot open heightmap file: ", image_size_result.to_string()))
 			return res
@@ -211,18 +247,24 @@ func _validate_form() -> HT_ErrorCheckReport:
 		heightmap_size = adjusted_size
 
 	if splatmap_path != "":
-		_check_map_size(splatmap_path, "splatmap", heightmap_size, res, _logger)
+		_check_map_size(splatmap_path, "splatmap", heightmap_size, bit_depth, res, _logger)
 
 	if colormap_path != "":
-		_check_map_size(colormap_path, "colormap", heightmap_size, res, _logger)
+		_check_map_size(colormap_path, "colormap", heightmap_size, bit_depth, res, _logger)
 
 	return res
 
 
-static func _check_map_size(path: String, map_name: String, heightmap_size: int, 
-	res: HT_ErrorCheckReport, logger):
+static func _check_map_size(
+	path: String, 
+	map_name: String, 
+	heightmap_size: int, 
+	bit_depth: int, 
+	res: HT_ErrorCheckReport, 
+	logger
+) -> void:
 	
-	var size_result := _load_image_size(path, logger)
+	var size_result := _load_image_size(path, logger, bit_depth)
 	if size_result.error_code != OK:
 		res.errors.append(str("Cannot open splatmap file: ", size_result.to_string()))
 		return
@@ -251,14 +293,14 @@ class HT_ImageSizeResult:
 		return HT_Errors.get_message(error_code)
 
 
-static func _load_image_size(path: String, logger) -> HT_ImageSizeResult:
+static func _load_image_size(path: String, logger, bit_depth: int) -> HT_ImageSizeResult:
 	var ext := path.get_extension().to_lower()
 	var result := HT_ImageSizeResult.new()
 
 	if ext == "png" or ext == "exr":
 		# Godot can load these formats natively
 		var im := Image.new()
-		var err := im.load(path)
+		var err := im.load(ProjectSettings.globalize_path(path))
 		if err != OK:
 			logger.error("An error occurred loading image '{0}', code {1}".format([path, err]))
 			result.error_code = err
@@ -276,14 +318,13 @@ static func _load_image_size(path: String, logger) -> HT_ImageSizeResult:
 			result.error_code = err
 			return result
 
-		# Assume the raw data is square in 16-bit format,
-		# so its size is function of file length
+		# Assume the raw data is square, so its size is function of file length
 		var flen := f.get_length()
 		f = null
-		var size_px = HT_Util.integer_square_root(flen / 2)
+		var size_px = HT_Util.integer_square_root(flen / (bit_depth/8))
 		if size_px == -1:
 			result.error_code = ERR_INVALID_DATA
-			result.error_message = "RAW image is not square"
+			result.error_message = "RAW image is not square or your bit depth choice is incorrect…"
 			return result
 		
 		logger.debug("Deduced RAW heightmap resolution: {0}*{1}, for a length of {2}" \

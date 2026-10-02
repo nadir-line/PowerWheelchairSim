@@ -12,7 +12,7 @@ extends Control
 const HT_Util = preload("../../util/util.gd")
 
 
-func _notification(what: int):
+func _notification(what: int) -> void:
 	if HT_Util.is_in_edited_scene(self):
 		return
 	if is_inside_tree() and what == Control.NOTIFICATION_VISIBILITY_CHANGED:
@@ -20,7 +20,7 @@ func _notification(what: int):
 		call_deferred("_fit_to_contents")
 
 
-func _fit_to_contents():
+func _fit_to_contents() -> void:
 	var dialog : Window = get_parent()
 	for child in dialog.get_children():
 		if child is Container:

@@ -63,26 +63,26 @@ static func create_open_texture_array_dialog() -> ConfirmationDialog:
 
 # TODO Post a proposal, we need a file dialog filtering on resource types, not on file extensions!
 
-static func _add_image_filters(file_dialog):
+static func _add_image_filters(file_dialog) -> void:
 	file_dialog.add_filter("*.png ; PNG files")
 	file_dialog.add_filter("*.jpg ; JPG files")
 	#file_dialog.add_filter("*.exr ; EXR files")
 
 
-static func _add_texture_filters(file_dialog):
+static func _add_texture_filters(file_dialog) -> void:
 	_add_image_filters(file_dialog)
 	# Godot
 	file_dialog.add_filter("*.ctex ; CompressedTexture files")
 	# Packed textures
-	file_dialog.add_filter("*.packed_tex ; HTerrainPackedTexture files")
+	# file_dialog.add_filter("*.packed_tex ; HTerrainPackedTexture files")
 
 
-static func _add_texture_array_filters(file_dialog):
+static func _add_texture_array_filters(file_dialog) -> void:
 	_add_image_filters(file_dialog)
 	# Godot
 	file_dialog.add_filter("*.ctexarray ; TextureArray files")
 	# Packed textures
-	file_dialog.add_filter("*.packed_texarr ; HTerrainPackedTextureArray files")
+	# file_dialog.add_filter("*.packed_texarr ; HTerrainPackedTextureArray files")
 
 
 # Tries to load a texture with the ResourceLoader, and if it fails, attempts
@@ -95,10 +95,9 @@ static func load_texture(path: String, logger) -> Texture:
 	# See https://github.com/godotengine/godot/issues/17483
 	logger.error(str("Failed to load texture ", path, ", attempting to load manually"))
 	var im := Image.new()
-	var err = im.load(path)
+	var err = im.load(ProjectSettings.globalize_path(path))
 	if err != OK:
 		logger.error(str("Failed to load image ", path))
 		return null
 	var itex := ImageTexture.create_from_image(im)
 	return itex
-

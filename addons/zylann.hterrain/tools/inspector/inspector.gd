@@ -9,7 +9,7 @@ extends Control
 const USAGE_FILE = "file"
 const USAGE_ENUM = "enum"
 
-signal property_changed(key, value)
+signal property_changed(key: String, value: Variant)
 
 # Used for most simple types
 class HT_InspectorEditor:
@@ -21,13 +21,13 @@ class HT_InspectorEditor:
 
 # Used when the control cannot hold the actual value
 class HT_InspectorResourceEditor extends HT_InspectorEditor:
-	var value = null
-	var label = null
+	var value: Resource = null
+	var label: Label = null
 	
-	func get_value():
+	func get_value() -> Resource:
 		return value
 	
-	func set_value(v):
+	func set_value(v: Resource) -> void:
 		value = v
 		label.text = "null" if v == null else v.resource_path
 
@@ -36,18 +36,18 @@ class HT_InspectorVectorEditor extends HT_InspectorEditor:
 	signal value_changed(v)
 	
 	var value := Vector2()
-	var xed = null
-	var yed = null
+	var xed: SpinBox = null
+	var yed: SpinBox = null
 	
-	func get_value():
+	func get_value() -> Vector2:
 		return value
 	
-	func set_value(v):
+	func set_value(v: Vector2) -> void:
 		xed.value = v.x
 		yed.value = v.y
 		value = v
 	
-	func _component_changed(v, i):
+	func _component_changed(v: float, i: int) -> void:
 		value[i] = v
 		value_changed.emit(value)		
 
@@ -59,11 +59,11 @@ var _edit_signal := true
 var _editors := {}
 
 # Had to separate the container because otherwise I can't open dialogs properly...
-@onready var _grid_container = get_node("GridContainer")
+@onready var _grid_container: GridContainer = get_node("GridContainer")
 @onready var _file_dialog = get_node("OpenFileDialog")
 
 
-func _ready():
+func _ready() -> void:
 	_file_dialog.visibility_changed.connect(
 		call_deferred.bind("_on_file_dialog_visibility_changed"))
 # Test
@@ -92,7 +92,7 @@ func _ready():
 
 
 # TODO Rename clear_schema
-func clear_prototype():
+func clear_prototype() -> void:
 	_editors.clear()
 	var i = _grid_container.get_child_count() - 1
 	while i >= 0:
@@ -103,12 +103,12 @@ func clear_prototype():
 	_prototype = null
 
 
-func get_value(key: String):
+func get_value(key: String) -> Variant:
 	var editor = _editors[key]
 	return editor.getter.call()
 
 
-func get_values():
+func get_values() -> Dictionary:
 	var values = {}
 	for key in _editors:
 		var editor = _editors[key]
@@ -116,12 +116,12 @@ func get_values():
 	return values
 
 
-func set_value(key: String, value):
+func set_value(key: String, value: Variant) -> void:
 	var editor = _editors[key]
 	editor.setter.call(value)
 
 
-func set_values(values: Dictionary):
+func set_values(values: Dictionary) -> void:
 	for key in values:
 		if _editors.has(key):
 			var editor = _editors[key]
@@ -130,7 +130,7 @@ func set_values(values: Dictionary):
 
 
 # TODO Rename set_schema
-func set_prototype(proto: Dictionary):
+func set_prototype(proto: Dictionary) -> void:
 	clear_prototype()
 	
 	for key in proto:
@@ -156,13 +156,13 @@ func set_prototype(proto: Dictionary):
 	_prototype = proto
 
 
-func trigger_all_modified():
+func trigger_all_modified() -> void:
 	for key in _prototype:
 		var value = _editors[key].getter.call_func()
 		property_changed.emit(key, value)
 
 
-func set_property_enabled(prop_name: String, enabled: bool):
+func set_property_enabled(prop_name: String, enabled: bool) -> void:
 	var ed = _editors[prop_name]
 	
 	if ed.control is BaseButton:
@@ -209,16 +209,21 @@ func _make_editor(key: String, prop: Dictionary) -> HT_InspectorEditor:
 				var option_button := OptionButton.new()
 				
 				for i in len(prop.enum_items):
-					var item = prop.enum_items[i]
-					option_button.add_item(item)
-				
-				# TODO We assume index, actually
+					var item:Array = prop.enum_items[i]
+					var value:int = item[0]
+					var text:String = item[1]
+					option_button.add_item(text, value)
+
 				getter = option_button.get_selected_id
-				setter = option_button.select
+				setter = func select_id(id: int):
+					var index:int = option_button.get_item_index(id)
+					assert(index >= 0)
+					option_button.select(index)
+
 				option_button.item_selected.connect(_property_edited.bind(key))
 				
 				editor = option_button
-				
+
 			else:
 				# Numeric value
 				var spinbox := SpinBox.new()
@@ -261,9 +266,9 @@ func _make_editor(key: String, prop: Dictionary) -> HT_InspectorEditor:
 				line_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 				editor.add_child(line_edit)
 				
-				var exts = []
+				var exts := PackedStringArray()
 				if prop.has("exts"):
-					exts = prop.exts
+					exts = PackedStringArray(prop.exts)
 				
 				var load_button := Button.new()
 				load_button.text = "..."
@@ -372,7 +377,7 @@ func _make_editor(key: String, prop: Dictionary) -> HT_InspectorEditor:
 	return ed
 
 
-static func _setup_range_control(range_control: Range, prop):
+static func _setup_range_control(range_control: Range, prop: Dictionary) -> void:
 	if prop.type == TYPE_INT:
 		range_control.step = 1
 		range_control.rounded = true
@@ -389,12 +394,12 @@ static func _setup_range_control(range_control: Range, prop):
 		range_control.max_value = 0x7fffffff
 
 
-func _property_edited(value, key):
+func _property_edited(value: Variant, key: String) -> void:
 	if _edit_signal:
 		property_changed.emit(key, value)
 
 
-func _randomize_property_pressed(key):
+func _randomize_property_pressed(key: String) -> void:
 	var prop = _prototype[key]
 	var v = 0
 	
@@ -414,21 +419,21 @@ func _randomize_property_pressed(key):
 	_editors[key].setter.call(v)
 
 
-func _dummy_getter():
+func _dummy_getter() -> void:
 	pass
 
 
-func _dummy_setter(v):
+func _dummy_setter(_unused_v: Variant) -> void:
 	# TODO Could use extra data to store the value anyways?
 	pass
 
 
-func _on_ask_load_texture(key):
+func _on_ask_load_texture(key: String) -> void:
 	_open_file_dialog(["*.png ; PNG files"], _on_texture_selected.bind(key), 
 		FileDialog.ACCESS_RESOURCES)
 
 
-func _open_file_dialog(filters: Array, callback: Callable, access: int):
+func _open_file_dialog(filters: Array, callback: Callable, access: int) -> void:
 	_file_dialog.access = access
 	_file_dialog.clear_filters()
 	for filter in filters:
@@ -442,7 +447,7 @@ func _open_file_dialog(filters: Array, callback: Callable, access: int):
 	_file_dialog.popup_centered_ratio(0.7)
 
 
-func _on_file_dialog_visibility_changed():
+func _on_file_dialog_visibility_changed() -> void:
 	if _file_dialog.visible == false:
 		# Disconnect listeners automatically,
 		# so we can re-use the same dialog with different listeners
@@ -451,29 +456,29 @@ func _on_file_dialog_visibility_changed():
 			_file_dialog.file_selected.disconnect(con.callable)
 
 
-func _on_texture_selected(path: String, key):
+func _on_texture_selected(path: String, key: String) -> void:
 	var tex = load(path)
 	if tex == null:
 		return
-	var ed = _editors[key]
+	var ed: HT_InspectorEditor = _editors[key]
 	ed.setter.call(tex)
 	_property_edited(tex, key)
 
 
-func _on_ask_clear_texture(key):
-	var ed = _editors[key]
+func _on_ask_clear_texture(key: String) -> void:
+	var ed: HT_InspectorEditor = _editors[key]
 	ed.setter.call(null)
 	_property_edited(null, key)
 
 
-func _on_ask_load_file(key, exts):
+func _on_ask_load_file(key: String, exts: PackedStringArray) -> void:
 	var filters := []
 	for ext in exts:
 		filters.append(str("*.", ext, " ; ", ext.to_upper(), " files"))
 	_open_file_dialog(filters, _on_file_selected.bind(key), FileDialog.ACCESS_FILESYSTEM)
 
 
-func _on_file_selected(path, key):
-	var ed = _editors[key]
+func _on_file_selected(path: String, key: String) -> void:
+	var ed: HT_InspectorEditor = _editors[key]
 	ed.setter.call(path)
 	_property_edited(path, key)

@@ -41,11 +41,11 @@ var _load_texture_type := -1
 var _logger = HT_Logger.get_for(self)
 
 
-func _init():
+func _init() -> void:
 	get_ok_button().hide()
 
 
-func _ready():
+func _ready() -> void:
 	if HT_Util.is_in_edited_scene(self):
 		return
 	for id in HTerrainTextureSet.MODE_COUNT:
@@ -53,7 +53,7 @@ func _ready():
 		_mode_selector.add_item(mode_name, id)
 
 
-func setup_dialogs(parent: Node):
+func setup_dialogs(parent: Node) -> void:
 	var d = HT_EditorUtil.create_open_texture_dialog()
 	d.file_selected.connect(_on_LoadTextureDialog_file_selected)
 	_load_texture_dialog = d
@@ -75,7 +75,7 @@ func setup_dialogs(parent: Node):
 	add_child(d)
 
 
-func _notification(what: int):
+func _notification(what: int) -> void:
 	if HT_Util.is_in_edited_scene(self):
 		return
 	
@@ -93,11 +93,11 @@ func _notification(what: int):
 			set_texture_set(null)
 
 
-func set_undo_redo(ur: EditorUndoRedoManager):
+func set_undo_redo(ur: EditorUndoRedoManager) -> void:
 	_undo_redo_manager = ur
 
 
-func set_texture_set(texture_set: HTerrainTextureSet):
+func set_texture_set(texture_set: HTerrainTextureSet) -> void:
 	if _texture_set == texture_set:
 		return
 	
@@ -111,11 +111,11 @@ func set_texture_set(texture_set: HTerrainTextureSet):
 		_update_ui_from_data()
 
 
-func _on_texture_set_changed():
+func _on_texture_set_changed() -> void:
 	_update_ui_from_data()
 
 
-func _update_ui_from_data():
+func _update_ui_from_data() -> void:
 	var prev_selected_items = _slots_list.get_selected_items()
 	
 	_slots_list.clear()
@@ -167,14 +167,14 @@ func _update_ui_from_data():
 			b.disabled = false
 
 
-static func _set_selected_id(ob: OptionButton, id: int):
+static func _set_selected_id(ob: OptionButton, id: int) -> void:
 	for i in ob.get_item_count():
 		if ob.get_item_id(i) == id:
 			ob.selected = i
 			break
 
 
-func select_slot(slot_index: int):
+func select_slot(slot_index: int) -> void:
 	var count = _texture_set.get_slots_count()
 	if count > 0:
 		if slot_index >= count:
@@ -182,7 +182,7 @@ func select_slot(slot_index: int):
 		_select_slot(slot_index)
 
 
-func _clear_previews():
+func _clear_previews() -> void:
 	var empty_texture : Texture2D = load(EMPTY_TEXTURE_PATH)
 	if empty_texture == null:
 		_logger.error(str("Failed to load empty texture ", EMPTY_TEXTURE_PATH))
@@ -198,7 +198,7 @@ func _clear_previews():
 	_roughness_preview.tooltip_text = _get_resource_path_or_empty(null)
 
 
-func _select_slot(slot_index: int):
+func _select_slot(slot_index: int) -> void:
 	assert(slot_index >= 0)
 	assert(slot_index < _texture_set.get_slots_count())
 
@@ -272,11 +272,11 @@ static func _get_resource_path_or_empty(res: Resource) -> String:
 	return "<empty>"
 
 
-func _on_ImportButton_pressed():
+func _on_ImportButton_pressed() -> void:
 	import_selected.emit()
 
 
-func _on_CloseButton_pressed():
+func _on_CloseButton_pressed() -> void:
 	hide()
 
 
@@ -285,7 +285,7 @@ func _get_undo_redo_for_texture_set() -> UndoRedo:
 		_undo_redo_manager.get_object_history_id(_texture_set))
 
 
-func _on_AddSlot_pressed():
+func _on_AddSlot_pressed() -> void:
 	assert(_texture_set.get_mode() == HTerrainTextureSet.MODE_TEXTURES)
 	var slot_index = _texture_set.get_slots_count()
 	var ur := _get_undo_redo_for_texture_set()
@@ -295,7 +295,7 @@ func _on_AddSlot_pressed():
 	ur.commit_action()
 
 
-func _on_RemoveSlot_pressed():
+func _on_RemoveSlot_pressed() -> void:
 	assert(_texture_set.get_mode() == HTerrainTextureSet.MODE_TEXTURES)
 	
 	var slot_index = _slots_list.get_selected_items()[0]
@@ -322,11 +322,11 @@ func _on_RemoveSlot_pressed():
 	ur.commit_action()
 
 
-func _on_SlotsList_item_selected(index: int):
+func _on_SlotsList_item_selected(index: int) -> void:
 	_select_slot(index)
 
 
-func _open_load_texture_dialog(type: int):
+func _open_load_texture_dialog(type: int) -> void:
 	_load_texture_type = type
 	if _texture_set.get_mode() == HTerrainTextureSet.MODE_TEXTURES:
 		_load_texture_dialog.popup_centered_ratio()
@@ -334,15 +334,15 @@ func _open_load_texture_dialog(type: int):
 		_load_texture_array_dialog.popup_centered_ratio()
 
 
-func _on_LoadAlbedo_pressed():
+func _on_LoadAlbedo_pressed() -> void:
 	_open_load_texture_dialog(HTerrainTextureSet.TYPE_ALBEDO_BUMP)
 
 
-func _on_LoadNormal_pressed():
+func _on_LoadNormal_pressed() -> void:
 	_open_load_texture_dialog(HTerrainTextureSet.TYPE_NORMAL_ROUGHNESS)
 
 
-func _set_texture_action(slot_index: int, texture: Texture, type: int):
+func _set_texture_action(slot_index: int, texture: Texture, type: int) -> void:
 	var prev_texture = _texture_set.get_texture(slot_index, type)
 
 	var ur := _get_undo_redo_for_texture_set()
@@ -368,7 +368,7 @@ func _set_texture_action(slot_index: int, texture: Texture, type: int):
 	ur.commit_action()
 
 
-func _set_texture_array_action(slot_index: int, texture_array: TextureLayered, type: int):
+func _set_texture_array_action(slot_index: int, texture_array: TextureLayered, type: int) -> void:
 	var prev_texture_array = _texture_set.get_texture_array(type)
 
 	var ur := _get_undo_redo_for_texture_set()
@@ -396,7 +396,7 @@ func _set_texture_array_action(slot_index: int, texture_array: TextureLayered, t
 	ur.commit_action()
 
 
-func _on_LoadTextureDialog_file_selected(fpath: String):
+func _on_LoadTextureDialog_file_selected(fpath: String) -> void:
 	assert(_texture_set.get_mode() == HTerrainTextureSet.MODE_TEXTURES)
 	var texture = load(fpath)
 	assert(texture != null)
@@ -404,7 +404,7 @@ func _on_LoadTextureDialog_file_selected(fpath: String):
 	_set_texture_action(slot_index, texture, _load_texture_type)
 
 
-func _on_LoadTextureArrayDialog_file_selected(fpath: String):
+func _on_LoadTextureArrayDialog_file_selected(fpath: String) -> void:
 	assert(_texture_set.get_mode() == HTerrainTextureSet.MODE_TEXTURE_ARRAYS)
 	var texture_array = load(fpath)
 	assert(texture_array != null)
@@ -416,7 +416,7 @@ func _on_LoadTextureArrayDialog_file_selected(fpath: String):
 	_set_texture_array_action(slot_index, texture_array, _load_texture_type)
 
 
-func _on_ClearAlbedo_pressed():
+func _on_ClearAlbedo_pressed() -> void:
 	var slot_index : int = _slots_list.get_selected_items()[0]
 	if _texture_set.get_mode() == HTerrainTextureSet.MODE_TEXTURES:
 		_set_texture_action(slot_index, null, HTerrainTextureSet.TYPE_ALBEDO_BUMP)
@@ -424,7 +424,7 @@ func _on_ClearAlbedo_pressed():
 		_set_texture_array_action(slot_index, null, HTerrainTextureSet.TYPE_ALBEDO_BUMP)
 
 
-func _on_ClearNormal_pressed():
+func _on_ClearNormal_pressed() -> void:
 	var slot_index : int = _slots_list.get_selected_items()[0]
 	if _texture_set.get_mode() == HTerrainTextureSet.MODE_TEXTURES:
 		_set_texture_action(slot_index, null, HTerrainTextureSet.TYPE_NORMAL_ROUGHNESS)
@@ -432,8 +432,8 @@ func _on_ClearNormal_pressed():
 		_set_texture_array_action(slot_index, null, HTerrainTextureSet.TYPE_NORMAL_ROUGHNESS)
 
 
-func _on_ModeSelector_item_selected(index: int):
-	var id = _mode_selector.get_selected_id()
+func _on_ModeSelector_item_selected(index: int) -> void:
+	var id := _mode_selector.get_selected_id()
 	if id == _texture_set.get_mode():
 		return
 	
@@ -446,23 +446,23 @@ func _on_ModeSelector_item_selected(index: int):
 		
 	else:
 		if _texture_set.get_mode() == HTerrainTextureSet.MODE_TEXTURES:
-			_mode_confirmation_dialog.window_title = "Switch to TextureArrays"
+			_mode_confirmation_dialog.title = "Switch to TextureArrays"
 			_mode_confirmation_dialog.dialog_text = \
 				"This will unload all textures currently setup. Do you want to continue?"
 			_mode_confirmation_dialog.popup_centered()
 		
 		else:
-			_mode_confirmation_dialog.window_title = "Switch to Textures"
+			_mode_confirmation_dialog.title = "Switch to Textures"
 			_mode_confirmation_dialog.dialog_text = \
 				"This will unload all textures currently setup. Do you want to continue?"
 			_mode_confirmation_dialog.popup_centered()
 
 
-func _on_ModeConfirmationDialog_confirmed():
+func _on_ModeConfirmationDialog_confirmed() -> void:
 	_switch_mode_action()
 
 
-func _switch_mode_action():
+func _switch_mode_action() -> void:
 	var mode := _texture_set.get_mode()
 	var ur := _get_undo_redo_for_texture_set()
 	
@@ -479,7 +479,7 @@ func _switch_mode_action():
 	ur.commit_action()
 
 
-static func backup_for_undo(texture_set: HTerrainTextureSet, ur: UndoRedo):
+static func backup_for_undo(texture_set: HTerrainTextureSet, ur: UndoRedo) -> void:
 	var mode := texture_set.get_mode()
 
 	ur.add_undo_method(texture_set.clear)

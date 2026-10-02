@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://dra5rbwi638wh"]
 
-[ext_resource type="PackedScene" uid="uid://bxqrouy7bbdl" path="res://addons/virtual-joystick/joystick/virtual_joystick.tscn" id="1"]
-[ext_resource type="FontFile" uid="uid://6hy24fcmknn0" path="res://assets/fonts/B612Mono-Regular.ttf" id="1_7l063"]
+[ext_resource type="FontFile" uid="uid://c5rmmsxmyvt0" path="res://assets/fonts/B612Mono-Regular.ttf" id="1_7l063"]
 
 [sub_resource type="Theme" id="Theme_iajoa"]
 default_font = ExtResource("1_7l063")
@@ -14,44 +13,6 @@ anchor_top = 0.02
 anchor_right = 0.98
 anchor_bottom = 0.98
 theme = SubResource("Theme_iajoa")
-
-[node name="UI" type="CanvasLayer" parent="." unique_id=631870345]
-
-[node name="VirtualJoystick01" parent="UI" unique_id=1593092681 instance=ExtResource("1")]
-anchors_preset = -1
-anchor_left = 0.1
-anchor_top = 0.9
-anchor_right = 0.1
-anchor_bottom = 0.9
-offset_left = 0.0
-offset_top = -200.0
-offset_right = 200.0
-offset_bottom = 0.0
-grow_vertical = 0
-size_flags_horizontal = 4
-clampzone_size = 200.0
-action_left = "cam_left"
-action_right = "cam_right"
-action_up = "cam_up"
-action_down = "cam_down"
-
-[node name="VirtualJoystick02" parent="UI" unique_id=2058877940 instance=ExtResource("1")]
-anchors_preset = -1
-anchor_left = 0.9
-anchor_top = 0.9
-anchor_right = 0.9
-anchor_bottom = 0.9
-offset_left = -200.0
-offset_top = -200.0
-offset_right = 0.0
-offset_bottom = 0.0
-grow_horizontal = 0
-grow_vertical = 0
-clampzone_size = 200.0
-action_left = "joystick_left"
-action_right = "joystick_right"
-action_up = "joystick_up"
-action_down = "joystick_down"
 
 [node name="Display" type="VBoxContainer" parent="." unique_id=1425734604]
 layout_mode = 1

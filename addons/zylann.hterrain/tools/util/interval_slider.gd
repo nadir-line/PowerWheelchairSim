@@ -14,11 +14,11 @@ signal changed
 
 var _min_value := 0.0
 var _max_value := 1.0
-var _values = [0.2, 0.6]
+var _values := [0.2, 0.6]
 var _grabbing := false
 
 
-func _get_property_list():
+func _get_property_list() -> Array[Dictionary]:
 	return [
 		{
 			"name": "min_value",
@@ -38,7 +38,7 @@ func _get_property_list():
 	]
 
 
-func _get(key: StringName):
+func _get(key: StringName) -> Variant:
 	match key:
 		&"min_value":
 			return _min_value
@@ -46,22 +46,27 @@ func _get(key: StringName):
 			return _max_value
 		&"range":
 			return Vector2(_min_value, _max_value)
+	return null
 
 
-func _set(key: StringName, value):
+func _set(key: StringName, value: Variant) -> bool:
 	match key:
 		&"min_value":
 			_min_value = min(value, _max_value)
 			queue_redraw()
+			return true
 		&"max_value":
 			_max_value = max(value, _min_value)
 			queue_redraw()
+			return true
 		&"range":
 			_min_value = value.x
 			_max_value = value.y
+			return true
+	return false
 
 
-func set_values(low: float, high: float):
+func set_values(low: float, high: float) -> void:
 	if low > high:
 		low = high
 	if high < low:
@@ -71,7 +76,7 @@ func set_values(low: float, high: float):
 	queue_redraw()
 
 
-func set_value(i: int, v: float, notify_change: bool):
+func set_value(i: int, v: float, notify_change: bool) -> void:
 	var min_value = _min_value
 	var max_value = _max_value
 	
@@ -133,29 +138,33 @@ func _get_closest_index(ratio: float) -> int:
 	return VALUE_HIGH
 
 
-func _set_from_pixel(px: float):
+func _set_from_pixel(px: float) -> void:
 	var r := (px - FG_MARGIN) / (size.x - FG_MARGIN * 2.0)
 	var i := _get_closest_index(r)
 	var v := _ratio_to_value(r)
 	set_value(i, v, true)
 
 
-func _gui_input(event: InputEvent):
-	if event is InputEventMouseButton:
-		if event.pressed:
-			if event.button_index == MOUSE_BUTTON_LEFT:
+func _gui_input(event: InputEvent) -> void:
+	var mb := event as InputEventMouseButton
+	if mb != null:
+		if mb.pressed:
+			if mb.button_index == MOUSE_BUTTON_LEFT:
 				_grabbing = true
-				_set_from_pixel(event.position.x)
+				_set_from_pixel(mb.position.x)
 		else:
-			if event.button_index == MOUSE_BUTTON_LEFT:
+			if mb.button_index == MOUSE_BUTTON_LEFT:
 				_grabbing = false
-				
-	elif event is InputEventMouseMotion:
+		return
+	
+	var mm := event as InputEventMouseMotion
+	if mm != null:
 		if _grabbing:
-			_set_from_pixel(event.position.x)			
+			_set_from_pixel(mm.position.x)
+		return
 
 
-func _draw():
+func _draw() -> void:
 	var grabber_width := 3
 	var background_v_margin := 0
 	var foreground_margin := FG_MARGIN

@@ -24,11 +24,11 @@ var _sectors := []
 var _sector_index := 0
 
 
-func _ready():
+func _ready() -> void:
 	set_process(false)
 
 
-func bake(terrain: HTerrain):
+func bake(terrain: HTerrain) -> void:
 	assert(terrain != null)
 	var data := terrain.get_data()
 	assert(data != null)
@@ -55,7 +55,7 @@ func bake(terrain: HTerrain):
 	set_process(true)
 
 
-func _setup_scene(terrain_size: int):
+func _setup_scene(terrain_size: int) -> void:
 	assert(_viewport == null)
 	
 	_viewport_size = DEFAULT_VIEWPORT_SIZE
@@ -93,14 +93,14 @@ func _setup_scene(terrain_size: int):
 	add_child(_viewport)
 
 
-func _cleanup_scene():
+func _cleanup_scene() -> void:
 	_viewport.queue_free()
 	_viewport = null
 	_plane = null
 	_camera = null
 
 
-func _process(delta):
+func _process(_unused_delta: float) -> void:
 	if not is_processing():
 		return
 
@@ -117,7 +117,7 @@ func _process(delta):
 		_sector_index += 1
 
 
-func _report_progress():
+func _report_progress() -> void:
 	var sector = _sectors[_sector_index]
 	progress_notified.emit({
 		"progress": float(_sector_index) / len(_sectors),
@@ -125,7 +125,7 @@ func _report_progress():
 	})
 
 
-func _setup_pass(sector: Vector2):
+func _setup_pass(sector: Vector2) -> void:
 	# Note: we implicitely take off-by-one pixels into account
 	var origin := sector * _viewport_size
 	var center := origin + 0.5 * Vector2(_viewport.size)
@@ -136,7 +136,7 @@ func _setup_pass(sector: Vector2):
 	_plane.position = Vector3(origin.x, 0.0, origin.y)
 
 
-func _grab_image(sector: Vector2):
+func _grab_image(sector: Vector2) -> void:
 	var tex := _viewport.get_texture()
 	var src := tex.get_image()
 	
@@ -154,7 +154,7 @@ func _grab_image(sector: Vector2):
 	dst.blit_rect(src, Rect2i(0, 0, src.get_width(), src.get_height()), origin)
 
 
-func _finish():
+func _finish() -> void:
 	assert(_terrain != null)
 	var data := _terrain.get_data() as HTerrainData
 	assert(data != null)

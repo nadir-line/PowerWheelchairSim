@@ -47,7 +47,8 @@ const _supported_formats = [
 	Image.FORMAT_R8,
 	Image.FORMAT_RG8,
 	Image.FORMAT_RGB8,
-	Image.FORMAT_RGBA8
+	Image.FORMAT_RGBA8,
+	Image.FORMAT_L8
 	# No longer supported since Godot 4 removed support for it in 2D viewports...
 #	Image.FORMAT_RH,
 #	Image.FORMAT_RGH,
@@ -84,7 +85,7 @@ var _debug_display : TextureRect
 var _logger = HT_Logger.get_for(self)
 
 
-func _init():
+func _init() -> void:
 	_viewport = SubViewport.new()
 	_viewport.size = Vector2(_brush_size, _brush_size)
 	_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
@@ -113,19 +114,20 @@ func _init():
 	add_child(_viewport)
 
 
-func set_debug_display(dd: TextureRect):
+func set_debug_display(dd: TextureRect) -> void:
 	_debug_display = dd
 	_debug_display.texture = _viewport.get_texture()
 
 
-func set_image(image: Image, texture: ImageTexture):
+func set_image(image: Image, texture: ImageTexture) -> void:
 	assert((image == null and texture == null) or (image != null and texture != null))
 	_image = image
 	_texture = texture
 	_viewport_bg_sprite.texture = _texture
 	_brush_material.set_shader_parameter(SHADER_PARAM_SRC_TEXTURE, _texture)
 	if image != null:
-		if image.get_format() == Image.FORMAT_RF:
+		if image.get_format() == Image.FORMAT_RF \
+		or image.get_format() == Image.FORMAT_RH: 
 			# In case of RF all shaders must encode their fragment outputs in RGBA8,
 			# including the unmodified background, as Godot 4.0 does not support RF viewports
 			_no_blend_material.shader = HT_NoBlendRFShader
@@ -143,7 +145,7 @@ func set_image(image: Image, texture: ImageTexture):
 # Sets the size of the brush in pixels.
 # This will cause the internal viewport to resize, which is expensive.
 # If you need to frequently change brush size during a paint stroke, prefer using scale instead.
-func set_brush_size(new_size: int):
+func set_brush_size(new_size: int) -> void:
 	_brush_size = new_size
 
 
@@ -151,7 +153,7 @@ func get_brush_size() -> int:
 	return _brush_size
 
 
-func set_brush_rotation(rotation: float):
+func set_brush_rotation(rotation: float) -> void:
 	_viewport_brush_sprite.rotation = rotation
 
 
@@ -162,7 +164,7 @@ func get_brush_rotation() -> float:
 # The difference between size and scale, is that size is in pixels, while scale is a multiplier.
 # Scale is also a lot cheaper to change, so you may prefer changing it instead of size if that
 # happens often during a painting stroke.
-func set_brush_scale(s: float):
+func set_brush_scale(s: float) -> void:
 	_brush_scale = clampf(s, 0.0, 1.0)
 	#_viewport_brush_sprite.scale = Vector2(s, s)
 
@@ -171,7 +173,7 @@ func get_brush_scale() -> float:
 	return _viewport_bg_sprite.scale.x
 
 
-func set_brush_opacity(opacity: float):
+func set_brush_opacity(opacity: float) -> void:
 	_brush_opacity = clampf(opacity, 0.0, 1.0)
 
 
@@ -179,22 +181,22 @@ func get_brush_opacity() -> float:
 	return _brush_opacity
 
 
-func set_brush_texture(texture: Texture):
+func set_brush_texture(texture: Texture) -> void:
 	_viewport_brush_sprite.texture = texture
 
 
-func set_brush_shader(shader: Shader):
+func set_brush_shader(shader: Shader) -> void:
 	if _brush_material.shader != shader:
 		_brush_material.shader = shader
 
 
-func set_brush_shader_param(p: String, v):
+func set_brush_shader_param(p: String, v: Variant) -> void:
 	assert(not _API_SHADER_PARAMS.has(p))
 	_modified_shader_params[p] = true
 	_brush_material.set_shader_parameter(p, v)
 
 
-func clear_brush_shader_params():
+func clear_brush_shader_params() -> void:
 	for key in _modified_shader_params:
 		_brush_material.set_shader_parameter(key, null)
 	_modified_shader_params.clear()
@@ -208,7 +210,7 @@ static func _get_size_fit_for_rotation(src_size: Vector2) -> Vector2i:
 
 
 # You must call this from an `_input` function or similar.
-func paint_input(center_pos: Vector2):
+func paint_input(center_pos: Vector2) -> void:
 	var vp_size := _get_size_fit_for_rotation(Vector2(_brush_size, _brush_size))
 	if _viewport.size != vp_size:
 		# Do this lazily so the brush slider won't lag while adjusting it
@@ -266,7 +268,7 @@ func has_modified_chunks() -> bool:
 	return len(_modified_chunks) > 0
 
 
-func _process(delta: float):
+func _process(delta: float) -> void:
 	if _pending_paint_render:
 		_pending_paint_render = false
 	
@@ -279,6 +281,18 @@ func _process(delta: float):
 			viewport_image = Image.create_from_data(
 				viewport_image.get_width(), viewport_image.get_height(), false, Image.FORMAT_RF, 
 				viewport_image.get_data())
+		
+		elif _image.get_format() == Image.FORMAT_RH:
+			# Reinterpret RGBA8 as RF then convert to RH.
+			# This assumes painting shaders encode the output properly.
+			# This is slower and only meant as legacy compatibility. It may be preferable to
+			# upgrade such heightmaps to RF at least for edition.
+			assert(viewport_image.get_format() == Image.FORMAT_RGBA8)
+			viewport_image = Image.create_from_data(
+				viewport_image.get_width(), viewport_image.get_height(), false, Image.FORMAT_RF, 
+				viewport_image.get_data())
+			viewport_image.convert(Image.FORMAT_RH)
+		
 		else:
 			viewport_image.convert(_image.get_format())
 		
@@ -306,7 +320,7 @@ func _process(delta: float):
 		_cmd_paint = false
 
 
-func _mark_modified_chunks(bx: int, by: int, bw: int, bh: int):
+func _mark_modified_chunks(bx: int, by: int, bw: int, bh: int) -> void:
 	var cs := UNDO_CHUNK_SIZE
 	
 	var cmin_x := bx / cs

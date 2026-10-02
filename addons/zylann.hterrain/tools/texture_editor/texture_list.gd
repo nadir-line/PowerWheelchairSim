@@ -21,7 +21,7 @@ var _selected_item := -1
 
 
 # TEST
-#func _ready():
+#func _ready() -> void:
 #	add_item("First", load("res://addons/zylann.hterrain_demo/textures/ground/bricks_albedo_bump.png"), 0)
 #	add_item("Second", load("res://addons/zylann.hterrain_demo/textures/ground/grass_albedo_bump.png"), 0)
 #	add_item("Third", load("res://addons/zylann.hterrain_demo/textures/ground/leaves_albedo_bump.png"), 0)
@@ -32,7 +32,7 @@ var _selected_item := -1
 
 
 # Note: the texture can be a TextureArray, which does not inherit Texture
-func add_item(text: String, texture: Texture, texture_layer: int = 0):
+func add_item(text: String, texture: Texture, texture_layer: int = 0) -> void:
 	var item : HT_TextureListItem = HT_TextureListItemScene.instantiate()
 	_container.add_child(item)
 	item.set_text(text)
@@ -43,7 +43,7 @@ func get_item_count() -> int:
 	return _container.get_child_count()
 
 
-func set_item_texture(index: int, tex: Texture, layer: int = 0):
+func set_item_texture(index: int, tex: Texture, layer: int = 0) -> void:
 	var child : HT_TextureListItem = _container.get_child(index)
 	child.set_texture(tex, layer)
 
@@ -52,7 +52,7 @@ func get_selected_item() -> int:
 	return _selected_item
 
 
-func clear():
+func clear() -> void:
 	for i in _container.get_child_count():
 		var child = _container.get_child(i)
 		if child is Control:
@@ -60,7 +60,7 @@ func clear():
 	_selected_item = -1
 
 
-func _on_item_selected(item: HT_TextureListItem):
+func _on_item_selected(item: HT_TextureListItem) -> void:
 	_selected_item = item.get_index()
 	for i in _container.get_child_count():
 		var child = _container.get_child(i)
@@ -69,11 +69,11 @@ func _on_item_selected(item: HT_TextureListItem):
 	item_selected.emit(_selected_item)
 
 
-func _on_item_activated(item: HT_TextureListItem):
+func _on_item_activated(item: HT_TextureListItem) -> void:
 	item_activated.emit(item.get_index())
 
 
-func _draw():
+func _draw() -> void:
 	# TODO Draw same background as Panel
 	# Draw a background
 	draw_rect(get_rect(), Color(0,0,0,0.3))

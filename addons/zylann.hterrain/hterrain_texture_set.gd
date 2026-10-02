@@ -72,7 +72,7 @@ static func get_max_slots_for_mode(mode: int) -> int:
 	return 0
 
 
-func _get_property_list() -> Array:
+func _get_property_list() -> Array[Dictionary]:
 	return [
 		{
 			"name": "mode",
@@ -87,19 +87,23 @@ func _get_property_list() -> Array:
 	]
 
 
-func _get(key: StringName):
+func _get(key: StringName) -> Variant:
 	if key == &"mode":
 		return _mode
 	if key == &"textures":
 		return _textures
+	return null
 
 
-func _set(key: StringName, value):
+func _set(key: StringName, value) -> bool:
 	if key == &"mode":
 		# Not using set_mode() here because otherwise it could reset stuff set before...
 		_mode = value
+		return true
 	if key == &"textures":
 		_textures = value
+		return true
+	return false
 
 
 func get_slots_count() -> int:
@@ -141,7 +145,7 @@ func get_texture(slot_index: int, ground_texture_type: int) -> Texture2D:
 		return null
 
 
-func set_texture(slot_index: int, ground_texture_type: int, texture: Texture2D):
+func set_texture(slot_index: int, ground_texture_type: int, texture: Texture2D) -> void:
 	assert(_mode == MODE_TEXTURES)
 	var texs = _textures[ground_texture_type]
 	if texs[slot_index] != texture:
@@ -156,7 +160,7 @@ func get_texture_array(ground_texture_type: int) -> TextureLayered:
 	return texs[0]
 
 
-func set_texture_array(ground_texture_type: int, texarray: TextureLayered):
+func set_texture_array(ground_texture_type: int, texarray: TextureLayered) -> void:
 	assert(_mode == MODE_TEXTURE_ARRAYS)
 	var texs = _textures[ground_texture_type]
 	if texs[0] != texarray:
@@ -166,13 +170,13 @@ func set_texture_array(ground_texture_type: int, texarray: TextureLayered):
 
 # TODO This function only exists because of a flaw in UndoRedo
 # See https://github.com/godotengine/godot/issues/36895
-func set_texture_null(slot_index: int, ground_texture_type: int):
+func set_texture_null(slot_index: int, ground_texture_type: int) -> void:
 	set_texture(slot_index, ground_texture_type, null)
 
 
 # TODO This function only exists because of a flaw in UndoRedo
 # See https://github.com/godotengine/godot/issues/36895
-func set_texture_array_null(ground_texture_type: int):
+func set_texture_array_null(ground_texture_type: int) -> void:
 	set_texture_array(ground_texture_type, null)
 
 
@@ -180,13 +184,13 @@ func get_mode() -> int:
 	return _mode
 
 
-func set_mode(mode: int):
+func set_mode(mode: int) -> void:
 	# This effectively clears slots
 	_mode = mode
 	clear()
 
 
-func clear():
+func clear() -> void:
 	match _mode:
 		MODE_TEXTURES:
 			for type in TYPE_COUNT:
@@ -209,7 +213,7 @@ func insert_slot(i: int) -> int:
 	return i
 
 
-func remove_slot(i: int):
+func remove_slot(i: int) -> void:
 	assert(_mode == MODE_TEXTURES)
 	if i == -1:
 		i = get_slots_count() - 1

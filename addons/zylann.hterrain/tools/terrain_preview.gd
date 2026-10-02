@@ -24,7 +24,7 @@ var _sea_plane : MeshInstance3D = null
 var _mesh_resolution := 0
 
 
-func _ready():
+func _ready() -> void:
 	if _sea_outline == null:
 		var mesh := HT_Util.create_wirecube_mesh()
 		var mat2 := StandardMaterial3D.new()
@@ -49,7 +49,7 @@ func _ready():
 		_viewport.add_child(_sea_plane)
 
 
-func setup(heights_texture: Texture2D, normals_texture: Texture2D):
+func setup(heights_texture: Texture2D, normals_texture: Texture2D) -> void:
 	var terrain_size := heights_texture.get_width()
 	var mesh_resolution := terrain_size / PREVIEW_MESH_LOD
 	
@@ -83,15 +83,15 @@ func setup(heights_texture: Texture2D, normals_texture: Texture2D):
 	_sea_plane.position = Vector3(aabb.size.x, 0, aabb.size.z) / 2.0
 
 
-func set_sea_visible(visible: bool):
+func set_sea_visible(visible: bool) -> void:
 	_sea_plane.visible = visible
 
 
-func set_shadows_enabled(enabled: bool):
+func set_shadows_enabled(enabled: bool) -> void:
 	_light.shadow_enabled = enabled
 
 
-func _update_camera():
+func _update_camera() -> void:
 	var aabb := _mesh_instance.get_aabb()
 	var target := aabb.position + 0.5 * aabb.size
 	var trans := Transform3D()
@@ -101,7 +101,7 @@ func _update_camera():
 	_camera.transform = trans
 
 
-func cleanup():
+func cleanup() -> void:
 	if _mesh_instance != null:
 		var mat : ShaderMaterial = _mesh_instance.mesh.surface_get_material(0)
 		assert(mat != null)
@@ -109,24 +109,27 @@ func cleanup():
 		mat.set_shader_parameter("u_terrain_normalmap", null)
 
 
-func _gui_input(event: InputEvent):
+func _gui_input(event: InputEvent) -> void:
 	if HT_Util.is_in_edited_scene(self):
 		return
 	
-	if event is InputEventMouseMotion:
-		if event.button_mask & MOUSE_BUTTON_MASK_MIDDLE:
-			var d : Vector2 = 0.01 * event.relative
+	var mm := event as InputEventMouseMotion
+	if mm != null:
+		if (mm.button_mask & MOUSE_BUTTON_MASK_MIDDLE) != 0:
+			var d : Vector2 = 0.01 * mm.relative
 			_yaw -= d.x
 			_pitch -= d.y
 			_update_camera()
 		else:
-			var rel : Vector2 = 0.01 * event.relative
+			var rel : Vector2 = 0.01 * mm.relative
 			# Align dragging to view rotation
 			rel = -rel.rotated(-_yaw)
-			dragged.emit(rel, event.button_mask)
+			dragged.emit(rel, mm.button_mask)
+		return
 	
-	elif event is InputEventMouseButton:
-		if event.pressed:
+	var mb := event as InputEventMouseButton
+	if mb != null:
+		if mb.pressed:
 			
 			var factor := 1.2
 			var max_factor := 10.0
@@ -134,10 +137,10 @@ func _gui_input(event: InputEvent):
 			var max_distance := _default_distance
 			
 			# Zoom in/out
-			if event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			if mb.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 				_distance = clampf(_distance * factor, min_distance, max_distance)
 				_update_camera()
 
-			elif event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			elif mb.button_index == MOUSE_BUTTON_WHEEL_UP:
 				_distance = clampf(_distance / factor, min_distance, max_distance)
 				_update_camera()

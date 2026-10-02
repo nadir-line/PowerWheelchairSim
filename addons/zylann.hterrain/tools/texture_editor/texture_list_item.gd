@@ -18,11 +18,11 @@ const DUMMY_TEXTURE_PATH = "res://addons/zylann.hterrain/tools/icons/empty.png"
 var _selected := false
 
 
-func set_text(text: String):
+func set_text(text: String) -> void:
 	_label.text = text
 
 
-func set_texture(texture: Texture, texture_layer: int):
+func set_texture(texture: Texture, texture_layer: int) -> void:
 	if texture is TextureLayered:
 		var mat = _texture_rect.material
 		if mat == null or not (mat is ShaderMaterial):
@@ -37,19 +37,20 @@ func set_texture(texture: Texture, texture_layer: int):
 		_texture_rect.material = HT_ColorMaterial
 
 
-func _gui_input(event: InputEvent):
-	if event is InputEventMouseButton:
-		if event.pressed:
-			if event.button_index == MOUSE_BUTTON_LEFT:
+func _gui_input(event: InputEvent) -> void:
+	var mb := event as InputEventMouseButton
+	if mb != null:
+		if mb.pressed:
+			if mb.button_index == MOUSE_BUTTON_LEFT:
 				grab_focus()
 				set_selected(true, true)
-				if event.double_click:
+				if mb.double_click:
 					# Don't do this at home.
 					# I do it here because this script is very related to its container anyways.
 					get_parent().get_parent()._on_item_activated(self)
 
 
-func set_selected(selected: bool, notify: bool):
+func set_selected(selected: bool, notify: bool) -> void:
 	if selected == _selected:
 		return
 	_selected = selected
@@ -62,7 +63,7 @@ func set_selected(selected: bool, notify: bool):
 		get_parent().get_parent()._on_item_selected(self)
 
 
-func _draw():
+func _draw() -> void:
 	var color : Color
 	if _selected:
 		color = get_theme_color("accent_color", "Editor")

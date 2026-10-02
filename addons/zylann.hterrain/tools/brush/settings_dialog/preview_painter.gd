@@ -10,7 +10,7 @@ var _painter : HT_Painter
 var _brush : HT_Brush
 
 
-func _init():
+func _init() -> void:
 	var p = HT_Painter.new()
 	# The name is just for debugging
 	p.set_name("Painter")
@@ -20,7 +20,7 @@ func _init():
 	_brush = HT_Brush.new()
 
 
-func set_image_texture(image: Image, texture: ImageTexture):
+func set_image_texture(image: Image, texture: ImageTexture) -> void:
 	_painter.set_image(image, texture)
 
 
@@ -29,7 +29,7 @@ func get_brush() -> HT_Brush:
 
 
 # This may be called from an `_input` callback
-func paint_input(position: Vector2, pressure: float):
+func paint_input(position: Vector2, pressure: float) -> void:
 	var p : HT_Painter = _painter
 	
 	if not _brush.configure_paint_input([p], position, pressure):

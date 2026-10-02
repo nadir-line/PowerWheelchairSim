@@ -23,7 +23,7 @@ var _mode := MODE_NORMAL
 var _camera_transform := Transform3D()
 
 
-func _ready():
+func _ready() -> void:
 	if HT_Util.is_in_edited_scene(self):
 		return
 	
@@ -33,13 +33,13 @@ func _ready():
 	_popup_menu.add_item("Normal mode", MODE_NORMAL)
 
 
-func set_terrain(node: HTerrain):
+func set_terrain(node: HTerrain) -> void:
 	if _terrain != node:
 		_terrain = node
 		set_process(_terrain != null)
 
 
-func set_camera_transform(ct: Transform3D):
+func set_camera_transform(ct: Transform3D) -> void:
 	if _camera_transform == ct:
 		return
 	if _terrain == null:
@@ -60,19 +60,20 @@ static func _get_xz(v: Vector3) -> Vector2:
 	return Vector2(v.x, v.z)
 
 
-func _gui_input(event: InputEvent):
-	if event is InputEventMouseButton:
-		if event.pressed:
-			match event.button_index:
+func _gui_input(event: InputEvent) -> void:
+	var mb := event as InputEventMouseButton
+	if mb != null:
+		if mb.pressed:
+			match mb.button_index:
 				MOUSE_BUTTON_RIGHT:
-					_popup_menu.position = get_screen_position() + event.position
+					_popup_menu.position = get_screen_position() + mb.position
 					_popup_menu.popup()
 				MOUSE_BUTTON_LEFT:
 					# Teleport there?
 					pass
 
 
-func _process(delta):
+func _process(_unused_delta: float) -> void:
 	if _terrain != null:
 		if _mode == MODE_QUADTREE:
 			queue_redraw()
@@ -80,7 +81,7 @@ func _process(delta):
 			_update_normal_material()
 
 
-func _set_mode(mode: int):
+func _set_mode(mode: int) -> void:
 	if mode == MODE_QUADTREE:
 		_color_rect.hide()
 	else:
@@ -93,7 +94,7 @@ func _set_mode(mode: int):
 	queue_redraw()
 
 
-func _update_normal_material():
+func _update_normal_material() -> void:
 	if _terrain == null:
 		return
 	var data : HTerrainData = _terrain.get_data()
@@ -114,12 +115,12 @@ func _update_normal_material():
 # Need to check if it has changed, otherwise Godot's update spinner
 # indicates that the editor keeps redrawing every frame,
 # which is not intended and consumes more power.
-static func _set_if_changed(sm: ShaderMaterial, param: String, v):
+static func _set_if_changed(sm: ShaderMaterial, param: String, v: Variant) -> void:
 	if sm.get_shader_parameter(param) != v:
 		sm.set_shader_parameter(param, v)
 
 
-func _draw():
+func _draw() -> void:
 	if _terrain == null:
 		return
 	
@@ -136,5 +137,5 @@ func _draw():
 			_terrain._edit_debug_draw(self)
 
 
-func _on_PopupMenu_id_pressed(id: int):
+func _on_PopupMenu_id_pressed(id: int) -> void:
 	_set_mode(id)

@@ -32,7 +32,7 @@ var _save_semaphore := Semaphore.new()
 var _save_thread_running := false
 
 
-func _init(cache_dir: String):
+func _init(cache_dir: String) -> void:
 	assert(cache_dir != "")
 	_cache_dir = cache_dir
 	var rng := RandomNumberGenerator.new()
@@ -53,7 +53,7 @@ func _init(cache_dir: String):
 # TODO Cannot cleanup the cache in destructor!
 # Godot doesn't allow me to call clear()...
 # https://github.com/godotengine/godot/issues/31166
-func _notification(what: int):
+func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		#clear()
 		_save_thread_running = false
@@ -62,7 +62,7 @@ func _notification(what: int):
 			_saving_thread.wait_to_finish()
 
 
-func _create_new_cache_file(fpath: String):
+func _create_new_cache_file(fpath: String) -> void:
 	var f := FileAccess.open(fpath, FileAccess.WRITE)
 	if f == null:
 		var err = FileAccess.get_open_error()
@@ -126,7 +126,7 @@ static func _get_image_data_size(im: Image) -> int:
 	return 1 + 4 + 4 + 4 + len(im.get_data())
 
 
-static func _write_image(f: FileAccess, im: Image):
+static func _write_image(f: FileAccess, im: Image) -> void:
 	f.store_8(im.get_format())
 	f.store_32(im.get_width())
 	f.store_32(im.get_height())
@@ -177,7 +177,7 @@ func load_image(id: int) -> Image:
 	return im
 
 
-func clear():
+func clear() -> void:
 	_logger.debug("Clearing image cache")
 	
 	var dir := DirAccess.open(_cache_dir)
@@ -210,7 +210,7 @@ func clear():
 	_cache_image_info.clear()
 
 
-func _save_thread_func():
+func _save_thread_func() -> void:
 	# Threads keep a reference to the object of the function they run.
 	# So if the object is a Reference, and that reference owns the thread... we get a cycle.
 	# We can break the cycle by removing 1 to the count inside the thread.
@@ -278,14 +278,12 @@ func _save_thread_func():
 			break
 
 
-func _on_error(msg: String):
+func _on_error(msg: String) -> void:
 	_logger.error(msg)
 
 
-func _on_image_saved(item: Dictionary):
+func _on_image_saved(item: Dictionary) -> void:
 	_logger.debug(str("Saved ", item.path))
 	item.saved = true
 	# Should remove image from memory (for usually being last reference)
 	item.image = null
-
-
