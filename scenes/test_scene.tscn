@@ -4,11 +4,13 @@
 [ext_resource type="PackedScene" uid="uid://db33kxe003a6r" path="res://objects/traffic_cone/traffic_cone.tscn" id="4"]
 [ext_resource type="PackedScene" uid="uid://nqnoncdfygcf" path="res://terrain/terrain_pbr/terrain_pbr.tscn" id="4_7ddre"]
 [ext_resource type="Script" uid="uid://dpytoir5ib0cp" path="res://addons/zylann.hterrain/hterrain_texture_set.gd" id="4_qjeyg"]
+[ext_resource type="Texture2D" uid="uid://bkpuvudx7v3vu" path="res://scenes/test_scene_slot0_albedo_bump.png" id="5_3qnke"]
+[ext_resource type="Texture2D" uid="uid://es6frccgclxg" path="res://scenes/test_scene_slot0_normal_roughness.png" id="6_wtsjf"]
 
 [sub_resource type="Resource" id="Resource_3qnke"]
 script = ExtResource("4_qjeyg")
 mode = 0
-textures = [[], []]
+textures = [[ExtResource("5_3qnke")], [ExtResource("6_wtsjf")]]
 
 [node name="TestScene" type="Node3D" unique_id=94623899]
 
@@ -24,11 +26,4 @@ directional_shadow_max_distance = 1000.0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.105, 13)
 
 [node name="TerrainPBR" parent="." unique_id=1122302774 instance=ExtResource("4_7ddre")]
-_terrain_data = null
-physics_material = null
 texture_set = SubResource("Resource_3qnke")
-shader_params/u_triplanar = false
-shader_params/u_globalmap_blend_start = 0.0
-shader_params/u_globalmap_blend_distance = 0.0
-shader_params/u_colormap_opacity_per_texture = Vector4(1, 1, 1, 1)
-shader_params/u_specular = 0.5

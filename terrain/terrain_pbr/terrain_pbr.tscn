@@ -1,14 +1,14 @@
 [gd_scene format=3 uid="uid://nqnoncdfygcf"]
 
-[ext_resource type="Script" uid="uid://bh31ivjh5wxkj" path="res://addons/zylann.hterrain/hterrain.gd" id="1_056hm"]
+[ext_resource type="Script" uid="uid://caqw6g616not5" path="res://addons/zylann.hterrain/hterrain.gd" id="1_056hm"]
 [ext_resource type="Resource" uid="uid://c3tn6alywd1hy" path="res://terrain/terrain_pbr/data.hterrain" id="2_apggt"]
-[ext_resource type="Script" uid="uid://mrvjvyxerogm" path="res://addons/zylann.hterrain/hterrain_texture_set.gd" id="2_u5u1b"]
-[ext_resource type="Texture2D" uid="uid://dq2dnoj1f2et7" path="res://terrain/terrain_pbr/terrain_pbr_slot0_albedo_bump.png" id="4_j3fjq"]
-[ext_resource type="Script" uid="uid://cdb3yd4b00dop" path="res://addons/zylann.hterrain/hterrain_detail_layer.gd" id="4_l4dip"]
-[ext_resource type="Texture2D" uid="uid://bk4j7xq61hcbp" path="res://assets/grass_blades/grass_blades_albedo.png" id="5_d65dy"]
-[ext_resource type="Texture2D" uid="uid://dnxsaclnl5vb6" path="res://terrain/terrain_pbr/terrain_pbr_slot0_normal_roughness.png" id="6_4uldo"]
-[ext_resource type="ArrayMesh" uid="uid://di1uriwtn5qfu" path="res://addons/zylann.hterrain/models/grass_quad_x4.obj" id="6_ai2i4"]
-[ext_resource type="Texture2D" uid="uid://be3hqpnjb83uk" path="res://addons/zylann.hterrain/tools/icons/icon_detail_layer_node.svg" id="7_cerja"]
+[ext_resource type="Script" uid="uid://dpytoir5ib0cp" path="res://addons/zylann.hterrain/hterrain_texture_set.gd" id="2_u5u1b"]
+[ext_resource type="Texture2D" uid="uid://cwri8d57ouurp" path="res://terrain/terrain_pbr/terrain_pbr_slot0_albedo_bump.png" id="4_j3fjq"]
+[ext_resource type="Script" uid="uid://bjlom3dnkr5mb" path="res://addons/zylann.hterrain/hterrain_detail_layer.gd" id="4_l4dip"]
+[ext_resource type="Texture2D" uid="uid://dyoopwf60wkcl" path="res://assets/grass_blades/grass_blades_albedo.png" id="5_d65dy"]
+[ext_resource type="Texture2D" uid="uid://clh1yvk7w8pf6" path="res://terrain/terrain_pbr/terrain_pbr_slot0_normal_roughness.png" id="6_4uldo"]
+[ext_resource type="ArrayMesh" uid="uid://cism8qe63t4tk" path="res://addons/zylann.hterrain/models/grass_quad_x4.obj" id="6_ai2i4"]
+[ext_resource type="Texture2D" uid="uid://6jmdwj3vn6m0" path="res://addons/zylann.hterrain/tools/icons/icon_detail_layer_node.svg" id="7_cerja"]
 [ext_resource type="PackedScene" uid="uid://c7vk3dblv23sr" path="res://assets/modern_house/modern_house.tscn" id="10_315gu"]
 
 [sub_resource type="Resource" id="Resource_umtdh"]
@@ -70,6 +70,7 @@ chunk_size = 32
 collision_enabled = true
 collision_layer = 1
 collision_mask = 1
+physics_material = null
 shader_type = "Classic4"
 custom_shader = null
 custom_globalmap_shader = null
@@ -78,11 +79,12 @@ render_layers = 1
 cast_shadow = 1
 shader_params/u_ground_uv_scale_per_texture = Vector4(5, 5, 5, 5)
 shader_params/u_depth_blending = true
-shader_params/u_triplanar = null
+shader_params/u_triplanar = false
 shader_params/u_tile_reduction = Vector4(1, 1, 1, 1)
-shader_params/u_globalmap_blend_start = null
-shader_params/u_globalmap_blend_distance = null
-shader_params/u_colormap_opacity_per_texture = null
+shader_params/u_globalmap_blend_start = 0.0
+shader_params/u_globalmap_blend_distance = 0.0
+shader_params/u_colormap_opacity_per_texture = Vector4(1, 1, 1, 1)
+shader_params/u_specular = 0.5
 
 [node name="HTerrainDetailLayer" type="Node3D" parent="." unique_id=1209389333]
 script = ExtResource("4_l4dip")
@@ -91,9 +93,9 @@ view_distance = 50.0
 density = 6.0
 instance_mesh = ExtResource("6_ai2i4")
 cast_shadow = 0
-shader_params/u_globalmap_tint_bottom = null
-shader_params/u_globalmap_tint_top = null
-shader_params/u_bottom_ao = null
+shader_params/u_globalmap_tint_bottom = 0.0
+shader_params/u_globalmap_tint_top = 0.0
+shader_params/u_bottom_ao = 0.0
 shader_params/u_instance_scale = Vector3(0.5, 0.5, 0.5)
 shader_params/u_roughness = 1.0
 metadata/_editor_icon = ExtResource("7_cerja")
