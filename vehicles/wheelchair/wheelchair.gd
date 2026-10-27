@@ -165,9 +165,6 @@ func _process(delta):
 			vr_instance.position.y = 0.5
 		else:
 			remove_child(vr_instance)
-	
-	if abs(rotation_degrees.z) > 60:
-		get_tree().reload_current_scene()
 
 
 func get_input(delta):
