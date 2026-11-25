@@ -17,10 +17,20 @@ size = Vector3(0.5, 0.01, 0.25)
 material = SubResource("StandardMaterial3D_k5ywv")
 
 [node name="Shelf2" type="CSGBox3D" parent="." unique_id=460428927]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
 size = Vector3(0.5, 0.01, 0.25)
 material = SubResource("StandardMaterial3D_k5ywv")
 
 [node name="Shelf3" type="CSGBox3D" parent="." unique_id=2047705088]
+size = Vector3(0.5, 0.01, 0.25)
+material = SubResource("StandardMaterial3D_k5ywv")
+
+[node name="Shelf4" type="CSGBox3D" parent="." unique_id=1377576120]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0)
+size = Vector3(0.5, 0.01, 0.25)
+material = SubResource("StandardMaterial3D_k5ywv")
+
+[node name="Shelf5" type="CSGBox3D" parent="." unique_id=858789230]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, 0)
 size = Vector3(0.5, 0.01, 0.25)
 material = SubResource("StandardMaterial3D_k5ywv")
