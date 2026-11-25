@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://ddc1glnvdbk3o"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_k5ywv"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cytly"]
+albedo_color = Color(0.5629578, 0.56295776, 0.56295776, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_k5ywv"]
+size = Vector3(0.5, 0.7, 0.25)
+
+[node name="ShelvesSmall" type="RigidBody3D" unique_id=534208833]
+
+[node name="Shelf1" type="CSGBox3D" parent="." unique_id=1656450972]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+size = Vector3(0.5, 0.01, 0.25)
+material = SubResource("StandardMaterial3D_k5ywv")
+
+[node name="Shelf2" type="CSGBox3D" parent="." unique_id=460428927]
+size = Vector3(0.5, 0.01, 0.25)
+material = SubResource("StandardMaterial3D_k5ywv")
+
+[node name="Shelf3" type="CSGBox3D" parent="." unique_id=2047705088]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, 0)
+size = Vector3(0.5, 0.01, 0.25)
+material = SubResource("StandardMaterial3D_k5ywv")
+
+[node name="Leg1" type="CSGBox3D" parent="." unique_id=1532876546]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25, -0.05, -0.125)
+size = Vector3(0.01, 0.7, 0.01)
+material = SubResource("StandardMaterial3D_cytly")
+
+[node name="Leg2" type="CSGBox3D" parent="." unique_id=1728225637]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, -0.05, -0.125)
+size = Vector3(0.01, 0.7, 0.01)
+material = SubResource("StandardMaterial3D_cytly")
+
+[node name="Leg3" type="CSGBox3D" parent="." unique_id=926317411]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, -0.05, 0.125)
+size = Vector3(0.01, 0.7, 0.01)
+material = SubResource("StandardMaterial3D_cytly")
+
+[node name="Leg4" type="CSGBox3D" parent="." unique_id=1928641762]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25, -0.05, 0.125)
+size = Vector3(0.01, 0.7, 0.01)
+material = SubResource("StandardMaterial3D_cytly")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=904138870]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
+shape = SubResource("BoxShape3D_k5ywv")
