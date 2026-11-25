@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://dpytoir5ib0cp" path="res://addons/zylann.hterrain/hterrain_texture_set.gd" id="4_qjeyg"]
 [ext_resource type="Texture2D" uid="uid://bkpuvudx7v3vu" path="res://scenes/test_scene_slot0_albedo_bump.png" id="5_3qnke"]
 [ext_resource type="Texture2D" uid="uid://es6frccgclxg" path="res://scenes/test_scene_slot0_normal_roughness.png" id="6_wtsjf"]
+[ext_resource type="PackedScene" uid="uid://ddc1glnvdbk3o" path="res://objects/shelves_small/shelves_small.tscn" id="7_wtsjf"]
 
 [sub_resource type="Resource" id="Resource_3qnke"]
 script = ExtResource("4_qjeyg")
@@ -27,3 +28,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.105, 13)
 
 [node name="TerrainPBR" parent="." unique_id=1122302774 instance=ExtResource("4_7ddre")]
 texture_set = SubResource("Resource_3qnke")
+
+[node name="ShelvesSmall" parent="." unique_id=534208833 instance=ExtResource("7_wtsjf")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.3, 0.418, 9.4)
